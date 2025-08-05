@@ -3,6 +3,8 @@ package http
 import (
 	"smart-city/internal/app/premise/dto"
 	services "smart-city/internal/app/premise/service"
+	"smart-city/pkg/errors"
+	"smart-city/pkg/validation"
 
 	"github.com/labstack/echo/v4"
 )
@@ -21,8 +23,14 @@ func (h *Handler) CreatePremise() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		createPremiseDto := &dto.CreatePremiseDto{}
 		if err := c.Bind(createPremiseDto); err != nil {
+			return errors.NewBadRequestError("Invalid request body")
+		}
+
+		// Validate the DTO
+		if err := validation.ValidateStruct(createPremiseDto); err != nil {
 			return err
 		}
+
 		createdPremise, err := h.svc.CreatePremise(c.Request().Context(), createPremiseDto)
 		if err != nil {
 			return err

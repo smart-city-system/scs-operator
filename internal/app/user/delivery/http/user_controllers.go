@@ -3,6 +3,8 @@ package http
 import (
 	"smart-city/internal/app/user/dto"
 	services "smart-city/internal/app/user/service"
+	"smart-city/pkg/errors"
+	"smart-city/pkg/validation"
 
 	"github.com/labstack/echo/v4"
 )
@@ -21,8 +23,14 @@ func (h *Handler) CreateUser() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		createUserDto := &dto.CreateUserDto{}
 		if err := c.Bind(createUserDto); err != nil {
+			return errors.NewBadRequestError("Invalid request body")
+		}
+
+		// Validate the DTO
+		if err := validation.ValidateStruct(createUserDto); err != nil {
 			return err
 		}
+
 		createdUser, err := h.svc.CreateUser(c.Request().Context(), createUserDto)
 		if err != nil {
 			return err

@@ -8,8 +8,8 @@ import (
 
 type Alert struct {
 	Base
-	CameraID    uuid.UUID
-	Camera      Camera `gorm:"foreignKey:CameraID"`
+	AssetID     uuid.UUID
+	Asset       Asset `gorm:"foreignKey:AssetID"`
 	TriggeredAt time.Time
 	Severity    string
 	Description string

@@ -5,6 +5,7 @@ import (
 	"smart-city/internal/app/premise/dto"
 	repositories "smart-city/internal/app/premise/repository"
 	"smart-city/internal/models"
+	"smart-city/pkg/errors"
 
 	"github.com/google/uuid"
 )
@@ -25,20 +26,28 @@ func (s *Service) CreatePremise(ctx context.Context, createPremiseDto *dto.Creat
 	if createPremiseDto.ParentPremiseID != "" {
 		parentID, err := uuid.Parse(createPremiseDto.ParentPremiseID)
 		if err != nil {
-			return nil, err
+			return nil, errors.NewBadRequestError("Invalid parent premise ID format")
 		}
 		// Verify that the parent premise exists
 		_, err = s.premiseRepo.GetPremiseByID(ctx, parentID.String())
 		if err != nil {
-			return nil, err
+			return nil, errors.NewNotFoundError("parent premise")
 		}
 		// Set the ParentPremiseID for the foreign key relationship
 		premise.ParentPremiseID = &parentID
 	}
 
-	return s.premiseRepo.CreatePremise(ctx, premise)
+	createdPremise, err := s.premiseRepo.CreatePremise(ctx, premise)
+	if err != nil {
+		return nil, errors.NewDatabaseError("create premise", err)
+	}
+	return createdPremise, nil
 }
 
 func (s *Service) GetPremises(ctx context.Context) ([]models.Premise, error) {
-	return s.premiseRepo.GetPremises(ctx)
+	premises, err := s.premiseRepo.GetPremises(ctx)
+	if err != nil {
+		return nil, errors.NewDatabaseError("get premises", err)
+	}
+	return premises, nil
 }

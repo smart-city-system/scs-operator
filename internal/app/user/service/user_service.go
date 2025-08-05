@@ -5,6 +5,7 @@ import (
 	"smart-city/internal/app/user/dto"
 	repositories "smart-city/internal/app/user/repository"
 	"smart-city/internal/models"
+	"smart-city/pkg/errors"
 	"smart-city/pkg/utils"
 )
 
@@ -20,8 +21,9 @@ func (s *Service) CreateUser(ctx context.Context, createUserDto *dto.CreateUserD
 	// Hash the password before saving
 	hashedPassword, err := utils.HashPassword(createUserDto.Password)
 	if err != nil {
-		return nil, err
+		return nil, errors.NewInternalError("Failed to hash password", err)
 	}
+
 	user := &models.User{
 		Name:     createUserDto.Name,
 		Email:    createUserDto.Email,
@@ -29,9 +31,48 @@ func (s *Service) CreateUser(ctx context.Context, createUserDto *dto.CreateUserD
 		Role:     createUserDto.Role,
 	}
 
-	return s.userRepo.CreateUser(ctx, user)
+	createdUser, err := s.userRepo.CreateUser(ctx, user)
+	if err != nil {
+		// Check if it's a duplicate email error
+		if isDuplicateEmailError(err) {
+			return nil, errors.NewConflictError("User with this email already exists")
+		}
+		return nil, errors.NewDatabaseError("create user", err)
+	}
+
+	return createdUser, nil
 }
 
 func (s *Service) GetUsers(ctx context.Context) ([]models.User, error) {
-	return s.userRepo.GetUsers(ctx)
+	users, err := s.userRepo.GetUsers(ctx)
+	if err != nil {
+		return nil, errors.NewDatabaseError("get users", err)
+	}
+	return users, nil
+}
+
+// isDuplicateEmailError checks if the error is due to duplicate email constraint
+func isDuplicateEmailError(err error) bool {
+	errStr := err.Error()
+	return contains(errStr, "duplicate key value violates unique constraint") &&
+		contains(errStr, "email")
+}
+
+// contains checks if a string contains a substring
+func contains(s, substr string) bool {
+	return len(s) >= len(substr) &&
+		(s == substr ||
+			(len(s) > len(substr) &&
+				(s[:len(substr)] == substr ||
+					s[len(s)-len(substr):] == substr ||
+					containsSubstring(s, substr))))
+}
+
+func containsSubstring(s, substr string) bool {
+	for i := 0; i <= len(s)-len(substr); i++ {
+		if s[i:i+len(substr)] == substr {
+			return true
+		}
+	}
+	return false
 }

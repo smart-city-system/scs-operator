@@ -39,10 +39,14 @@ func main() {
 	err = psqlDb.AutoMigrate(
 		&models.User{},
 		&models.Premise{},
-		&models.Camera{},
+		&models.Asset{},
+		&models.Snapshot{},
 		&models.Alert{},
 		&models.Incident{},
-		&models.DispatchRequest{},
+		&models.IncidentGuidance{},
+		&models.IncidentGuidanceStep{},
+		&models.GuidanceTemplate{},
+		&models.GuidanceStep{},
 	)
 	if err != nil {
 		appLogger.Fatalf("Database migration failed: %s", err)
