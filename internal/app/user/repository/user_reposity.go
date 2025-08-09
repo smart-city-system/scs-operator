@@ -3,7 +3,7 @@ package repositories
 import (
 	"context"
 	"fmt"
-	"smart-city/internal/models"
+	"scs-operator/internal/models"
 
 	"gorm.io/gorm"
 )
@@ -28,4 +28,12 @@ func (r *UserRepository) GetUsers(ctx context.Context) ([]models.User, error) {
 		return nil, fmt.Errorf("failed to get users: %w", err)
 	}
 	return Users, nil
+}
+
+func (r *UserRepository) GetUserByID(ctx context.Context, id string) (*models.User, error) {
+	var User models.User
+	if err := r.db.WithContext(ctx).First(&User, "id = ?", id).Error; err != nil {
+		return nil, fmt.Errorf("failed to get user: %w", err)
+	}
+	return &User, nil
 }

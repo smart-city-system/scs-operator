@@ -2,8 +2,8 @@ package services
 
 import (
 	"context"
-	"smart-city/internal/models"
-	"smart-city/pkg/utils"
+	"scs-operator/internal/models"
+	"scs-operator/pkg/utils"
 )
 
 type guardRepository interface {

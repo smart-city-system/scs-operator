@@ -2,10 +2,10 @@ package services
 
 import (
 	"context"
-	"smart-city/internal/app/guidance-step/dto"
-	repositories "smart-city/internal/app/guidance-step/repository"
-	"smart-city/internal/models"
-	"smart-city/pkg/errors"
+	"scs-operator/internal/app/guidance-step/dto"
+	repositories "scs-operator/internal/app/guidance-step/repository"
+	"scs-operator/internal/models"
+	"scs-operator/pkg/errors"
 
 	"github.com/google/uuid"
 )

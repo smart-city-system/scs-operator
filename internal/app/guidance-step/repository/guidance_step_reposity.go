@@ -3,7 +3,7 @@ package repositories
 import (
 	"context"
 	"fmt"
-	"smart-city/internal/models"
+	"scs-operator/internal/models"
 
 	"gorm.io/gorm"
 )
@@ -38,8 +38,8 @@ func (r *GuidanceStepRepository) GetGuidanceStepByID(ctx context.Context, id str
 	return &GuidanceStep, nil
 }
 
-func (r *GuidanceStepRepository) CreateGuidanceStepsByGuidanceTemplateID(ctx context.Context, steps []models.GuidanceStep) ([]models.GuidanceStep, error) {
-	if err := r.db.WithContext(ctx).Create(&steps).Error; err != nil {
+func (r *GuidanceStepRepository) CreateGuidanceSteps(ctx context.Context, steps []models.GuidanceStep) ([]models.GuidanceStep, error) {
+	if err := r.db.WithContext(ctx).Create(steps).Error; err != nil {
 		return nil, fmt.Errorf("failed to create GuidanceSteps: %w", err)
 	}
 	return steps, nil

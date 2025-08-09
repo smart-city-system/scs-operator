@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"smart-city/config"
-	"smart-city/pkg/logger"
+	config "scs-operator/config"
+	"scs-operator/pkg/logger"
 )
 
 // Middleware manager

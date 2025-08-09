@@ -2,19 +2,22 @@ package services
 
 import (
 	"context"
-	"smart-city/internal/app/user/dto"
-	repositories "smart-city/internal/app/user/repository"
-	"smart-city/internal/models"
-	"smart-city/pkg/errors"
-	"smart-city/pkg/utils"
+	incidentRepositories "scs-operator/internal/app/incident/repository"
+	"scs-operator/internal/app/user/dto"
+	repositories "scs-operator/internal/app/user/repository"
+	"scs-operator/internal/models"
+	"scs-operator/pkg/errors"
+	"scs-operator/pkg/utils"
 )
 
 type Service struct {
-	userRepo repositories.UserRepository
+	userRepo                 repositories.UserRepository
+	incidentGuidanceRepo     incidentRepositories.IncidentGuidanceRepository
+	incidentGuidanceStepRepo incidentRepositories.IncidentGuidanceStepRepository
 }
 
-func NewUserService(userRepo repositories.UserRepository) *Service {
-	return &Service{userRepo: userRepo}
+func NewUserService(userRepo repositories.UserRepository, incidentGuidanceRepo incidentRepositories.IncidentGuidanceRepository, incidentGuidanceStepRepo incidentRepositories.IncidentGuidanceStepRepository) *Service {
+	return &Service{userRepo: userRepo, incidentGuidanceRepo: incidentGuidanceRepo, incidentGuidanceStepRepo: incidentGuidanceStepRepo}
 }
 
 func (s *Service) CreateUser(ctx context.Context, createUserDto *dto.CreateUserDto) (*models.User, error) {
@@ -49,6 +52,31 @@ func (s *Service) GetUsers(ctx context.Context) ([]models.User, error) {
 		return nil, errors.NewDatabaseError("get users", err)
 	}
 	return users, nil
+}
+
+func (s *Service) GetAssignments(ctx context.Context, userID string) ([]models.IncidentGuidance, error) {
+	assignments, err := s.incidentGuidanceRepo.GetIncidentGuidanceByAssigneeID(ctx, userID)
+	if err != nil {
+		return nil, errors.NewDatabaseError("get assignments", err)
+	}
+	return assignments, nil
+}
+
+func (s *Service) CompleteStep(ctx context.Context, assignmentID string, stepID string) error {
+	// TODO: Check if the step belongs to the assignment
+	stepInfo, err := s.incidentGuidanceStepRepo.GetIncidentGuidanceStepByID(ctx, stepID)
+	if err != nil {
+		return errors.NewDatabaseError("get step", err)
+	}
+	if stepInfo.IncidentGuidanceID.String() != assignmentID {
+		return errors.NewBadRequestError("step does not belong to the assignment")
+	}
+	if stepInfo.IsCompleted {
+		return errors.NewBadRequestError("step already completed")
+	}
+
+	s.incidentGuidanceStepRepo.UpdateIncidentGuidanceStep(ctx, stepID, true)
+	return nil
 }
 
 // isDuplicateEmailError checks if the error is due to duplicate email constraint

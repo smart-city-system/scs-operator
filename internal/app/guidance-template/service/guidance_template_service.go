@@ -2,11 +2,11 @@ package services
 
 import (
 	"context"
-	guidanceStepRepositories "smart-city/internal/app/guidance-step/repository"
-	"smart-city/internal/app/guidance-template/dto"
-	guidanceTemplateRepositories "smart-city/internal/app/guidance-template/repository"
-	"smart-city/internal/models"
-	"smart-city/pkg/errors"
+	guidanceStepRepositories "scs-operator/internal/app/guidance-step/repository"
+	"scs-operator/internal/app/guidance-template/dto"
+	guidanceTemplateRepositories "scs-operator/internal/app/guidance-template/repository"
+	"scs-operator/internal/models"
+	"scs-operator/pkg/errors"
 )
 
 type Service struct {
@@ -39,7 +39,7 @@ func (s *Service) CreateGuidanceTemplate(ctx context.Context, createGuidanceTemp
 		})
 	}
 	if len(steps) > 0 {
-		_, err = s.guidanceStepRepo.CreateGuidanceStepsByGuidanceTemplateID(ctx, steps)
+		_, err = s.guidanceStepRepo.CreateGuidanceSteps(ctx, steps)
 		if err != nil {
 			return nil, errors.NewDatabaseError("create guidanceSteps", err)
 		}

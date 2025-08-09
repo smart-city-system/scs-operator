@@ -2,20 +2,26 @@ package services
 
 import (
 	"context"
-	"smart-city/internal/app/incident/dto"
-	repositories "smart-city/internal/app/incident/repository"
-	"smart-city/internal/models"
-	"smart-city/pkg/errors"
+	guidanceTemplateRepository "scs-operator/internal/app/guidance-template/repository"
+	"scs-operator/internal/app/incident/dto"
+	repo "scs-operator/internal/app/incident/repository"
+	userRepositories "scs-operator/internal/app/user/repository"
+	"scs-operator/internal/models"
+	"scs-operator/pkg/errors"
 
 	"github.com/google/uuid"
 )
 
 type Service struct {
-	incidentRepo repositories.IncidentRepository
+	incidentRepo             repo.IncidentRepository
+	incidentGuidanceRepo     repo.IncidentGuidanceRepository
+	incidentGuidanceStepRepo repo.IncidentGuidanceStepRepository
+	userRepo                 userRepositories.UserRepository
+	guidanceTemplateRepo     guidanceTemplateRepository.GuidanceTemplateRepository
 }
 
-func NewIncidentService(incidentRepo repositories.IncidentRepository) *Service {
-	return &Service{incidentRepo: incidentRepo}
+func NewIncidentService(incidentRepo repo.IncidentRepository, incidentGuidanceRepo repo.IncidentGuidanceRepository, userRepo userRepositories.UserRepository, guidanceTemplateRepo guidanceTemplateRepository.GuidanceTemplateRepository, incidentGuidanceStepRepo repo.IncidentGuidanceStepRepository) *Service {
+	return &Service{incidentRepo: incidentRepo, incidentGuidanceRepo: incidentGuidanceRepo, userRepo: userRepo, guidanceTemplateRepo: guidanceTemplateRepo, incidentGuidanceStepRepo: incidentGuidanceStepRepo}
 }
 
 func (s *Service) CreateIncident(ctx context.Context, createIncidentDto *dto.CreateIncidentDto) (*models.Incident, error) {
@@ -23,22 +29,20 @@ func (s *Service) CreateIncident(ctx context.Context, createIncidentDto *dto.Cre
 	incident := &models.Incident{
 		Name:        createIncidentDto.Name,
 		Description: createIncidentDto.Description,
-		Location:    createIncidentDto.Location,
 		Status:      createIncidentDto.Status,
-		AlertID:     nil,
-		Asset:       nil,
+		Alarm: nil,
 	}
 	// alertID, err := uuid.Parse(createIncidentDto.AlertID)
 	// if err != nil {
 	// 	return nil, errors.NewBadRequestError("Invalid alert ID format")
 	// }
 	// incident.AlertID = &alertID
-	assetID, err := uuid.Parse(createIncidentDto.AssetID)
+	alarmID, err := uuid.Parse(createIncidentDto.AlarmId)
 
 	if err != nil {
 		return nil, errors.NewBadRequestError("Invalid asset ID format")
 	}
-	incident.AssetID = assetID
+	incident.AlarmID = alarmID
 
 	createdIncident, err := s.incidentRepo.CreateIncident(ctx, incident)
 	if err != nil {
@@ -62,4 +66,66 @@ func (s *Service) GetIncidentByID(ctx context.Context, id string) (*models.Incid
 		return nil, errors.NewDatabaseError("get incident", err)
 	}
 	return incident, nil
+}
+
+func (s *Service) AssignGuidance(ctx context.Context, incidentID string, assignGuidanceDto *dto.AssignGuidance) (*models.IncidentGuidance, error) {
+	incident, err := s.incidentRepo.GetIncidentByID(ctx, incidentID)
+	if err != nil {
+		return nil, errors.NewNotFoundError("incident not found")
+	}
+	if incident == nil {
+		return nil, errors.NewNotFoundError("incident not found")
+	}
+	incidentGuidance := &models.IncidentGuidance{
+		IncidentID: &incident.ID,
+		Incident:   incident,
+	}
+	// Validate guidance template ID
+	guidanceTemplateID, err := uuid.Parse(assignGuidanceDto.GuidanceTemplateID)
+	if err != nil {
+		return nil, errors.NewBadRequestError("Invalid guidance template ID format")
+	}
+	guidanceTemplate, err := s.guidanceTemplateRepo.GetGuidanceTemplateByID(ctx, guidanceTemplateID.String())
+	if err != nil {
+		return nil, errors.NewNotFoundError("guidance template not found")
+	}
+	incidentGuidance.GuidanceTemplateID = &guidanceTemplate.ID
+	incidentGuidance.GuidanceTemplate = guidanceTemplate
+	// Validate guidance assignee
+	assigneeId, err := uuid.Parse(assignGuidanceDto.Assignee)
+	if err != nil {
+		return nil, errors.NewBadRequestError("Invalid assignee ID format")
+	}
+	assigneeInfo, err := s.userRepo.GetUserByID(ctx, assigneeId.String())
+	if err != nil {
+		return nil, errors.NewNotFoundError("assignee not found")
+	}
+	incidentGuidance.AssigneeID = &assigneeInfo.ID
+	incidentGuidance.Assignee = assigneeInfo
+
+	createdIncidentGuidance, err := s.incidentGuidanceRepo.CreateIncidentGuidance(ctx, incidentGuidance)
+	if err != nil {
+		return nil, errors.NewDatabaseError("assign guidance", err)
+	}
+	steps := []models.IncidentGuidanceStep{}
+	for _, step := range guidanceTemplate.GuidanceSteps {
+		steps = append(steps, models.IncidentGuidanceStep{
+			IncidentGuidanceID: createdIncidentGuidance.ID,
+			StepNumber:         int64(step.StepNumber),
+			Instruction:        step.Instruction,
+			IsCompleted:        false,
+		})
+	}
+
+	_, _ = s.incidentGuidanceStepRepo.CreateIncidentGuidanceSteps(ctx, steps)
+
+	return createdIncidentGuidance, nil
+	// Assuming the current user ID is set here
+}
+func (s *Service) GetIncidentGuidance(ctx context.Context, incidentID string) (*models.IncidentGuidance, error) {
+	incidentGuidance, err := s.incidentGuidanceRepo.GetIncidentGuidanceByIncidentID(ctx, incidentID)
+	if err != nil {
+		return nil, errors.NewDatabaseError("get incident guidance", err)
+	}
+	return incidentGuidance, nil
 }

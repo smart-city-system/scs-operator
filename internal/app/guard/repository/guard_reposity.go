@@ -3,7 +3,7 @@ package repositories
 import (
 	"context"
 	"fmt"
-	"smart-city/internal/models"
+	"scs-operator/internal/models"
 
 	"gorm.io/gorm"
 )

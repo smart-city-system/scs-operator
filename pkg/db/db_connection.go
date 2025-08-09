@@ -2,7 +2,7 @@ package db
 
 import (
 	"fmt"
-	"smart-city/config"
+	config "scs-operator/config"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

@@ -1,8 +1,8 @@
 package http
 
 import (
-	services "smart-city/internal/app/guard/service"
-	"smart-city/internal/models"
+	services "scs-operator/internal/app/guard/service"
+	"scs-operator/internal/models"
 
 	"github.com/labstack/echo/v4"
 )

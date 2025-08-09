@@ -1,10 +1,10 @@
 package http
 
 import (
-	"smart-city/internal/app/premise/dto"
-	services "smart-city/internal/app/premise/service"
-	"smart-city/pkg/errors"
-	"smart-city/pkg/validation"
+	"scs-operator/internal/app/premise/dto"
+	services "scs-operator/internal/app/premise/service"
+	"scs-operator/pkg/errors"
+	"scs-operator/pkg/validation"
 
 	"github.com/labstack/echo/v4"
 )

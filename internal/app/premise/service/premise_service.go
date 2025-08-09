@@ -2,10 +2,10 @@ package services
 
 import (
 	"context"
-	"smart-city/internal/app/premise/dto"
-	repositories "smart-city/internal/app/premise/repository"
-	"smart-city/internal/models"
-	"smart-city/pkg/errors"
+	"scs-operator/internal/app/premise/dto"
+	repositories "scs-operator/internal/app/premise/repository"
+	"scs-operator/internal/models"
+	"scs-operator/pkg/errors"
 
 	"github.com/google/uuid"
 )
@@ -20,8 +20,8 @@ func NewPremiseService(premiseRepo repositories.PremiseRepository) *Service {
 
 func (s *Service) CreatePremise(ctx context.Context, createPremiseDto *dto.CreatePremiseDto) (*models.Premise, error) {
 	premise := &models.Premise{
-		Name:     createPremiseDto.Name,
-		Location: createPremiseDto.Location,
+		Name:    createPremiseDto.Name,
+		Address: createPremiseDto.Address,
 	}
 	if createPremiseDto.ParentPremiseID != "" {
 		parentID, err := uuid.Parse(createPremiseDto.ParentPremiseID)

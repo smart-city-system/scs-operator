@@ -1,10 +1,10 @@
 package http
 
 import (
-	"smart-city/internal/app/user/dto"
-	services "smart-city/internal/app/user/service"
-	"smart-city/pkg/errors"
-	"smart-city/pkg/validation"
+	"scs-operator/internal/app/user/dto"
+	services "scs-operator/internal/app/user/service"
+	"scs-operator/pkg/errors"
+	"scs-operator/pkg/validation"
 
 	"github.com/labstack/echo/v4"
 )
@@ -47,5 +47,27 @@ func (h *Handler) GetUsers() echo.HandlerFunc {
 			return err
 		}
 		return c.JSON(200, guards)
+	}
+}
+
+func (h *Handler) GetAssignments() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		userID := "72b194cd-3cb1-4653-b7d5-ed2fc032ed62"
+		assignments, err := h.svc.GetAssignments(c.Request().Context(), userID)
+		if err != nil {
+			return err
+		}
+		return c.JSON(200, assignments)
+	}
+}
+func (h *Handler) CompleteStep() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		assignmentId := c.Param("assignmentId")
+		stepId := c.Param("stepId")
+		err := h.svc.CompleteStep(c.Request().Context(), assignmentId, stepId)
+		if err != nil {
+			return err
+		}
+		return c.JSON(200, "success")
 	}
 }

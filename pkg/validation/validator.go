@@ -3,7 +3,7 @@ package validation
 import (
 	"fmt"
 	"reflect"
-	"smart-city/pkg/errors"
+	"scs-operator/pkg/errors"
 	"strings"
 
 	"github.com/go-playground/validator/v10"
@@ -17,7 +17,7 @@ type Validator struct {
 // NewValidator creates a new validator instance
 func NewValidator() *Validator {
 	v := validator.New()
-	
+
 	// Register custom tag name function to use json tags
 	v.RegisterTagNameFunc(func(fld reflect.StructField) string {
 		name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
@@ -26,10 +26,10 @@ func NewValidator() *Validator {
 		}
 		return name
 	})
-	
+
 	// Register custom validators
 	registerCustomValidators(v)
-	
+
 	return &Validator{validator: v}
 }
 
@@ -41,7 +41,7 @@ func (v *Validator) Validate(s interface{}) error {
 	}
 
 	var validationErrors errors.ValidationErrors
-	
+
 	if validatorErrors, ok := err.(validator.ValidationErrors); ok {
 		for _, validatorError := range validatorErrors {
 			validationError := errors.ValidationError{
@@ -103,13 +103,13 @@ func registerCustomValidators(v *validator.Validate) {
 			return true // Let required handle empty values
 		}
 		// Simple UUID format validation
-		return len(value) == 36 && 
-			   value[8] == '-' && 
-			   value[13] == '-' && 
-			   value[18] == '-' && 
-			   value[23] == '-'
+		return len(value) == 36 &&
+			value[8] == '-' &&
+			value[13] == '-' &&
+			value[18] == '-' &&
+			value[23] == '-'
 	})
-	
+
 	// Register role validator for user roles
 	v.RegisterValidation("role", func(fl validator.FieldLevel) bool {
 		role := fl.Field().String()

@@ -1,10 +1,10 @@
 package http
 
 import (
-	"smart-city/internal/app/incident/dto"
-	services "smart-city/internal/app/incident/service"
-	"smart-city/pkg/errors"
-	"smart-city/pkg/validation"
+	"scs-operator/internal/app/incident/dto"
+	services "scs-operator/internal/app/incident/service"
+	"scs-operator/pkg/errors"
+	"scs-operator/pkg/validation"
 
 	"github.com/labstack/echo/v4"
 )
@@ -57,5 +57,34 @@ func (h *Handler) GetIncident() echo.HandlerFunc {
 			return err
 		}
 		return c.JSON(200, incident)
+	}
+}
+
+func (h *Handler) AssignGuidance() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		incidentID := c.Param("id")
+		assignGuidance := &dto.AssignGuidance{}
+		if err := c.Bind(assignGuidance); err != nil {
+			return errors.NewBadRequestError("Invalid request body")
+		}
+
+		if err := validation.ValidateStruct(assignGuidance); err != nil {
+			return err
+		}
+		createdIncidentGuidance, err := h.svc.AssignGuidance(c.Request().Context(), incidentID, assignGuidance)
+		if err != nil {
+			return err
+		}
+		return c.JSON(201, createdIncidentGuidance)
+	}
+}
+func (h *Handler) GetIncidentGuidance() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		incidentID := c.Param("id")
+		incidentGuidance, err := h.svc.GetIncidentGuidance(c.Request().Context(), incidentID)
+		if err != nil {
+			return err
+		}
+		return c.JSON(200, incidentGuidance)
 	}
 }

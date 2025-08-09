@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"smart-city/pkg/utils"
+	"scs-operator/pkg/utils"
 	"time"
 
 	"github.com/labstack/echo/v4"

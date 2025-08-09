@@ -3,7 +3,7 @@ package repositories
 import (
 	"context"
 	"fmt"
-	"smart-city/internal/models"
+	"scs-operator/internal/models"
 
 	"gorm.io/gorm"
 )
@@ -32,7 +32,7 @@ func (r *GuidanceTemplateRepository) GetGuidanceTemplates(ctx context.Context) (
 
 func (r *GuidanceTemplateRepository) GetGuidanceTemplateByID(ctx context.Context, id string) (*models.GuidanceTemplate, error) {
 	var GuidanceTemplate models.GuidanceTemplate
-	if err := r.db.WithContext(ctx).First(&GuidanceTemplate, "id = ?", id).Error; err != nil {
+	if err := r.db.WithContext(ctx).Preload("GuidanceSteps").First(&GuidanceTemplate, "id = ?", id).Error; err != nil {
 		return nil, fmt.Errorf("failed to get GuidanceTemplate: %w", err)
 	}
 	return &GuidanceTemplate, nil

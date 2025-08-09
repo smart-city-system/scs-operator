@@ -2,8 +2,8 @@ package middleware
 
 import (
 	"net/http"
-	"smart-city/pkg/errors"
-	"smart-city/pkg/utils"
+	"scs-operator/pkg/errors"
+	"scs-operator/pkg/utils"
 
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
@@ -18,7 +18,7 @@ func (mw *MiddlewareManager) ErrorHandlerMiddleware(next echo.HandlerFunc) echo.
 		}
 
 		requestID := utils.GetRequestID(c)
-		
+
 		// Log the error
 		mw.logger.Errorf("Request %s failed: %v", requestID, err)
 
@@ -180,8 +180,8 @@ func (mw *MiddlewareManager) isDuplicateKeyError(err error) bool {
 	errStr := err.Error()
 	// PostgreSQL duplicate key error patterns
 	return contains(errStr, "duplicate key value violates unique constraint") ||
-		   contains(errStr, "UNIQUE constraint failed") ||
-		   contains(errStr, "duplicate entry")
+		contains(errStr, "UNIQUE constraint failed") ||
+		contains(errStr, "duplicate entry")
 }
 
 // isForeignKeyError checks if the error is a foreign key constraint violation
@@ -189,18 +189,18 @@ func (mw *MiddlewareManager) isForeignKeyError(err error) bool {
 	errStr := err.Error()
 	// PostgreSQL foreign key error patterns
 	return contains(errStr, "violates foreign key constraint") ||
-		   contains(errStr, "FOREIGN KEY constraint failed") ||
-		   contains(errStr, "foreign key constraint fails")
+		contains(errStr, "FOREIGN KEY constraint failed") ||
+		contains(errStr, "foreign key constraint fails")
 }
 
 // contains checks if a string contains a substring (case-insensitive)
 func contains(s, substr string) bool {
-	return len(s) >= len(substr) && 
-		   (s == substr || 
-		    (len(s) > len(substr) && 
-		     (s[:len(substr)] == substr || 
-		      s[len(s)-len(substr):] == substr || 
-		      containsSubstring(s, substr))))
+	return len(s) >= len(substr) &&
+		(s == substr ||
+			(len(s) > len(substr) &&
+				(s[:len(substr)] == substr ||
+					s[len(s)-len(substr):] == substr ||
+					containsSubstring(s, substr))))
 }
 
 func containsSubstring(s, substr string) bool {
