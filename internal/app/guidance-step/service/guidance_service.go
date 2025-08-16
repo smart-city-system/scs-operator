@@ -22,7 +22,8 @@ func (s *Service) CreateGuidanceStep(ctx context.Context, createGuidanceStepDto 
 
 	guidanceStep := &models.GuidanceStep{
 		StepNumber:  createGuidanceStepDto.StepNumber,
-		Instruction: createGuidanceStepDto.Instruction,
+		Title:       createGuidanceStepDto.Title,
+		Description: createGuidanceStepDto.Description,
 	}
 	guidanceTemplateID, err := uuid.Parse(createGuidanceStepDto.GuidanceTemplateID)
 

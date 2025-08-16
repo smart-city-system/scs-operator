@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	config "scs-operator/config"
+	"scs-operator/internal/container"
 	logger "scs-operator/pkg/logger"
 	"time"
 
@@ -17,14 +18,15 @@ const (
 )
 
 type Server struct {
-	Echo   *echo.Echo
-	cfg    *config.Config
-	db     *gorm.DB
-	logger logger.Logger
+	Echo      *echo.Echo
+	cfg       *config.Config
+	db        *gorm.DB
+	logger    logger.Logger
+	container *container.Container
 }
 
-func NewServer(cfg *config.Config, db *gorm.DB, logger logger.Logger) *Server {
-	return &Server{cfg: cfg, db: db, logger: logger, Echo: echo.New()}
+func NewServer(cfg *config.Config, db *gorm.DB, logger logger.Logger, deps *container.Container) *Server {
+	return &Server{cfg: cfg, db: db, logger: logger, container: deps, Echo: echo.New()}
 }
 func (s *Server) Run() error {
 	// Map handlers

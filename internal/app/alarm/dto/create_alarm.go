@@ -5,4 +5,5 @@ type CreateAlarmDto struct {
 	Type        string `json:"type"`
 	Description string `json:"description"`
 	TriggeredAt string `json:"triggered_at"`
+	Severity    string `json:"severity"`
 }

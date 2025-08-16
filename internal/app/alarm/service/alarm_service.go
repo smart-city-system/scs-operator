@@ -7,6 +7,7 @@ import (
 	premiseRepositories "scs-operator/internal/app/premise/repository"
 	"scs-operator/internal/models"
 	"scs-operator/pkg/errors"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -20,11 +21,18 @@ func NewAlarmService(alarmRepo alarmRepositories.AlarmRepository, premiseRepo pr
 	return &Service{alarmRepo: alarmRepo, premiseRepo: premiseRepo}
 }
 
-func (s *Service) CreatePremise(ctx context.Context, createAlarmDto *dto.CreateAlarmDto) (*models.Alarm, error) {
+func (s *Service) CreateAlarm(ctx context.Context, createAlarmDto *dto.CreateAlarmDto) (*models.Alarm, error) {
 	alarm := &models.Alarm{
 		Type:        createAlarmDto.Type,
 		Description: createAlarmDto.Description,
-		TriggeredAt: createAlarmDto.TriggeredAt,
+		Severity:    createAlarmDto.Severity,
+	}
+	if createAlarmDto.TriggeredAt != "" {
+		parsedTime, err := time.Parse("2006-01-02 15:04:05", createAlarmDto.TriggeredAt)
+		if err != nil {
+			return nil, err
+		}
+		alarm.TriggeredAt = parsedTime
 	}
 	if createAlarmDto.PremiseID != "" {
 		premiseID, err := uuid.Parse(createAlarmDto.PremiseID)

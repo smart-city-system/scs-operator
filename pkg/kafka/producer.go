@@ -2,7 +2,6 @@ package kafka_client
 
 import (
 	"context"
-	"time"
 
 	"github.com/segmentio/kafka-go"
 )
@@ -14,13 +13,9 @@ type Producer struct {
 func NewProducer(config *Config, pCfg *ProducerConfig) *Producer {
 	return &Producer{
 		Writer: kafka.NewWriter(kafka.WriterConfig{
-			Brokers:      config.Brokers,
-			Topic:        config.Topic,
-			Balancer:     &kafka.LeastBytes{},
-			BatchSize:    pCfg.BatchSize,
-			BatchTimeout: time.Duration(pCfg.BatchTimeout) * time.Millisecond,
-			Async:        pCfg.Async,
-			RequiredAcks: pCfg.RequiredAcks,
+			Brokers:   config.Brokers,
+			Topic:     config.Topic,
+			BatchSize: pCfg.BatchSize,
 		}),
 	}
 }

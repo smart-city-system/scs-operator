@@ -6,10 +6,13 @@ import (
 
 type Incident struct {
 	Base
-	Name        string    `json:"name"`
-	Description string    `json:"description"`
-	ImageURL    string    `json:"image_url"`
-	AlarmID     uuid.UUID `json:"alarm_id,omitempty"`
-	Alarm       *Alarm    `json:"alarm,omitempty" gorm:"foreignKey:AlarmID"`
-	Status      string    `json:"status" gorm:"check:status IN ('new', 'in_progress', 'resolved')"`
+	Name             string            `json:"name"`
+	Description      string            `json:"description"`
+	AlarmID          uuid.UUID         `json:"alarm_id,omitempty"`
+	Alarm            *Alarm            `json:"alarm,omitempty" gorm:"foreignKey:AlarmID"`
+	Status           string            `json:"status" gorm:"check:status IN ('new', 'in_progress', 'resolved')"`
+	Severity         string            `json:"severity" gorm:"check:severity IN ('low', 'medium', 'high')"`
+	Location         string            `json:"location"`
+	IncidentGuidance *IncidentGuidance `json:"incident_guidance,omitempty" gorm:"foreignKey:IncidentID"`
+	IncidentMedia    []IncidentMedia   `json:"incident_media,omitempty" gorm:"foreignKey:IncidentID"`
 }

@@ -19,11 +19,9 @@ func NewGuidanceTemplateService(guidanceTemplateRepo guidanceTemplateRepositorie
 }
 
 func (s *Service) CreateGuidanceTemplate(ctx context.Context, createGuidanceTemplateDto *dto.CreateGuidanceTemplateDto) (*models.GuidanceTemplate, error) {
-
 	guidanceTemplate := &models.GuidanceTemplate{
 		Name:        createGuidanceTemplateDto.Name,
 		Description: createGuidanceTemplateDto.Description,
-		Category:    createGuidanceTemplateDto.Category,
 	}
 
 	createdGuidanceTemplate, err := s.guidanceTemplateRepo.CreateGuidanceTemplate(ctx, guidanceTemplate)
@@ -34,7 +32,8 @@ func (s *Service) CreateGuidanceTemplate(ctx context.Context, createGuidanceTemp
 	for _, step := range createGuidanceTemplateDto.Steps {
 		steps = append(steps, models.GuidanceStep{
 			StepNumber:         step.StepNumber,
-			Instruction:        step.Instruction,
+			Title:              step.Title,
+			Description:        step.Description,
 			GuidanceTemplateID: createdGuidanceTemplate.ID,
 		})
 	}

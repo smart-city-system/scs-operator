@@ -7,5 +7,6 @@ type GuidanceStep struct {
 	GuidanceTemplateID uuid.UUID         `json:"guidance_template_id"`
 	GuidanceTemplate   *GuidanceTemplate `json:"guidance_template,omitempty" gorm:"foreignKey:GuidanceTemplateID"`
 	StepNumber         int               `json:"step_number"`
-	Instruction        string            `json:"instruction"`
+	Title              string            `json:"title"`
+	Description        string            `json:"description"`
 }

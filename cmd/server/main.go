@@ -7,7 +7,9 @@ import (
 	"os"
 	"os/signal"
 	config "scs-operator/config"
+	"scs-operator/internal/container"
 	"scs-operator/internal/models"
+	"scs-operator/internal/processor"
 	"scs-operator/internal/server"
 	"scs-operator/pkg/db"
 	kafka_client "scs-operator/pkg/kafka"
@@ -33,8 +35,8 @@ func main() {
 		log.Fatalf("Failed to parse config: %v", err)
 	}
 	//Init logger
-	appLogger := logger.NewApiLogger(&cfg)
-	appLogger.InitLogger()
+	appLogger := logger.GetLogger()
+	appLogger.InitLogger(&cfg)
 	appLogger.Infof("LogLevel: %s, Mode: %s", cfg.Logger.Level, cfg.Server.Mode)
 
 	//Init db
@@ -54,12 +56,33 @@ func main() {
 		&models.IncidentGuidanceStep{},
 		&models.GuidanceTemplate{},
 		&models.GuidanceStep{},
+		&models.IncidentMedia{},
 	)
 	if err != nil {
 		appLogger.Fatalf("Database migration failed: %s", err)
 	}
-	// Initialize the server
-	s := server.NewServer(&cfg, psqlDb, appLogger)
+	// Initialize Kafka producer
+	producer := startKafkaProducer("notification.triggered", &cfg, appLogger)
+
+	// Test sending a Kafka message after producer initialization
+	ctx := context.Background()
+	err = producer.WriteMessages(ctx, kafka.Message{
+		Key:   []byte("test-key"),
+		Value: []byte("Hello, Kafka!"),
+	})
+	if err != nil {
+		appLogger.Errorf("Failed to send Kafka message: %v", err)
+	} else {
+		appLogger.Info("Kafka message sent successfully")
+	}
+
+	// Create shared repositories and services using container
+	deps := container.NewContainer(psqlDb, producer)
+
+	// Start Kafka producer
+
+	// Initialize the server with shared dependencies
+	s := server.NewServer(&cfg, psqlDb, appLogger, deps)
 
 	// Create a WaitGroup to manage goroutines
 	var wg sync.WaitGroup
@@ -78,26 +101,27 @@ func main() {
 		}
 	}()
 
-	// Start Kafka consumer in a separate goroutine
+	// Start Kafka consumer in a separate goroutine with shared services
 	wg.Add(1) // Increment the WaitGroup counter
-	go startKafkaConsumer("alarm.triggered", &cfg, appLogger, consumerCtx, &wg)
-	wg.Add(1) // Increment the WaitGroup counter
-	go startKafkaConsumer("incident.detected", &cfg, appLogger, consumerCtx, &wg)
+	go startKafkaConsumer("alarm.triggered", &cfg, appLogger, consumerCtx, &wg, deps)
 
 	// Block until a signal is received
 	<-quit
 
-	appLogger.Info("Shutting down the server and consumer...")
+	appLogger.Info("Shutting down the server consumer and producer...")
 
 	// Signal consumer to stop processing
 	consumerCancel()
 	// Wait a moment to allow goroutine to notice context cancellation
 	time.Sleep(1 * time.Second) //
 
+	// Wait for the Kafka consumer goroutine to finish
+	producer.Close() // Close the producer to flush any remaining messages
+
 	// Create a separate, timeout context for the server shutdown
 	serverShutdownCtx, serverShutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer serverShutdownCancel()
 
+	defer serverShutdownCancel()
 	// Shut down the Echo server
 	if err := s.Shutdown(serverShutdownCtx); err != nil {
 		appLogger.Errorf("Server shutdown failed: %v", err)
@@ -108,7 +132,7 @@ func main() {
 	appLogger.Info("Server and consumer stopped.")
 }
 
-func startKafkaConsumer(topic string, cfg *config.Config, logger *logger.ApiLogger, ctx context.Context, wg *sync.WaitGroup) {
+func startKafkaConsumer(topic string, cfg *config.Config, logger *logger.ApiLogger, ctx context.Context, wg *sync.WaitGroup, container *container.Container) {
 	// Ensure wg.Done() is called when the function exits
 	defer wg.Done()
 	// Initialize Kafka consumer
@@ -123,7 +147,10 @@ func startKafkaConsumer(topic string, cfg *config.Config, logger *logger.ApiLogg
 		CommitInterval: 1000,
 		StartOffset:    kafka.FirstOffset,
 	}
-	consumer := kafka_client.NewConsumer(&kafkaCfg, &consumerCfg)
+	// Use the shared alarm service instead of creating new instances
+	processor := processor.NewAlarmProcessor(*container.AlarmService, logger)
+
+	consumer := kafka_client.NewConsumer(&kafkaCfg, &consumerCfg, &processor)
 	defer func() {
 		logger.Info("Closing Kafka consumer...")
 		if err := consumer.Close(); err != nil {
@@ -146,10 +173,25 @@ func startKafkaConsumer(topic string, cfg *config.Config, logger *logger.ApiLogg
 					logger.Info("Consumer stopped due to context cancellation.")
 					return
 				}
-				logger.Errorf("Failed to read message: %v", err)
 				continue
 			}
-			logger.Infof("Received message at offset %d: %s = %s", msg.Offset, string(msg.Key), string(msg.Value))
+			processor.Process(msg)
+
 		}
 	}
+}
+
+func startKafkaProducer(topic string, cfg *config.Config, logger *logger.ApiLogger) *kafka_client.Producer {
+	// Initialize Kafka producer
+	kafkaCfg := kafka_client.Config{
+		Brokers: strings.Split(cfg.Kafka.Brokers, ","),
+		Topic:   topic,
+	}
+	producerCfg := kafka_client.ProducerConfig{
+		BatchSize:    1,
+		BatchTimeout: 100,   // In milliseconds
+		Async:        false, // Set to false for immediate delivery
+	}
+	producer := kafka_client.NewProducer(&kafkaCfg, &producerCfg)
+	return producer
 }

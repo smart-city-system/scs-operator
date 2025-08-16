@@ -4,15 +4,17 @@ import (
 	"context"
 	"fmt"
 
+	"scs-operator/internal/processor"
+
 	"github.com/segmentio/kafka-go"
 )
 
 type Consumer struct {
-	Reader *kafka.Reader
+	Reader    *kafka.Reader
+	Processor *processor.Processor
 }
 
-func NewConsumer(cfg *Config, cCfg *ConsumerConfig) *Consumer {
-	fmt.Print(cfg.Brokers)
+func NewConsumer(cfg *Config, cCfg *ConsumerConfig, processor *processor.Processor) *Consumer {
 	return &Consumer{
 		Reader: kafka.NewReader(kafka.ReaderConfig{
 			Brokers: cfg.Brokers,
@@ -24,6 +26,7 @@ func NewConsumer(cfg *Config, cCfg *ConsumerConfig) *Consumer {
 			// MaxWait:     time.Duration(cCfg.CommitInterval) * time.Millisecond,
 			// Partition:   cCfg.Partition,
 		}),
+		Processor: processor,
 	}
 }
 func (c *Consumer) ReadMessage(ctx context.Context) (kafka.Message, error) {

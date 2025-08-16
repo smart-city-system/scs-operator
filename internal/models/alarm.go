@@ -1,13 +1,18 @@
 package models
 
-import "github.com/google/uuid"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 // Alarm represents an alarm in the SCS system.
 type Alarm struct {
-	ID          string    `json:"id"`
+	Base
 	PremiseID   uuid.UUID `json:"premise_id"`
-	Premise     *Premise  `json:"premise,omitempty" gorm:"foreignkey:PremiseID"`
+	Premise     *Premise  `json:"premise,omitempty" gorm:"foreignKey:PremiseID"`
 	Type        string    `json:"type"`
 	Description string    `json:"description"`
-	TriggeredAt string    `json:"triggered_at"`
+	Severity    string    `json:"severity" gorm:"check:severity IN ('low', 'medium', 'high')"`
+	TriggeredAt time.Time `json:"triggered_at" gorm:"type:timestamptz;default:CURRENT_TIMESTAMP"`
 }
