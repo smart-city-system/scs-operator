@@ -7,4 +7,5 @@ import (
 func (h *Handler) RegisterRoutes(g *echo.Group) {
 	g.POST("", h.CreatePremise())
 	g.GET("", h.GetPremises())
+	g.GET("/:id/guards", h.GetAvailableGuards())
 }

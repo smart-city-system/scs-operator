@@ -39,5 +39,6 @@ func (ap AlarmProcessor) Process(msg kafka.Message) error {
 		return err
 	}
 	ap.logger.Info("Alarm created")
+	
 	return nil // or return an actual error if something goes wrong
 }

@@ -6,4 +6,5 @@ import (
 
 func (h *Handler) RegisterRoutes(g *echo.Group) {
 	g.GET("", h.GetAlarms())
+	g.PATCH("/:id", h.UpdateAlarm())
 }

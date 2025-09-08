@@ -3,6 +3,9 @@ package container
 import (
 	alarm_repository "scs-operator/internal/app/alarm/repository"
 	alarm_service "scs-operator/internal/app/alarm/service"
+	guard_premise_repository "scs-operator/internal/app/guard/repository"
+	guard_repository "scs-operator/internal/app/guard/repository"
+	guard_service "scs-operator/internal/app/guard/service"
 	guidance_step_repository "scs-operator/internal/app/guidance-step/repository"
 	guidance_step_service "scs-operator/internal/app/guidance-step/service"
 	guidance_template_repository "scs-operator/internal/app/guidance-template/repository"
@@ -28,6 +31,8 @@ type Container struct {
 	UserRepo                 *user_repository.UserRepository
 	GuidanceTemplateRepo     *guidance_template_repository.GuidanceTemplateRepository
 	GuidanceStepRepo         *guidance_step_repository.GuidanceStepRepository
+	GuardRepo                *guard_repository.GuardRepository
+	GuardPremiseRepo         *guard_premise_repository.GuardPremiseRepository
 
 	// Services
 	AlarmService            *alarm_service.Service
@@ -35,6 +40,7 @@ type Container struct {
 	IncidentService         *incident_service.Service
 	GuidanceTemplateService *guidance_template_service.Service
 	GuidanceStepService     *guidance_step_service.Service
+	GuardService            *guard_service.Service
 }
 
 // NewContainer creates a new dependency container with all repositories and services
@@ -48,13 +54,16 @@ func NewContainer(db *gorm.DB, producer *kafka_client.Producer) *Container {
 	userRepo := user_repository.NewUserRepository(db)
 	guidanceTemplateRepo := guidance_template_repository.NewGuidanceTemplateRepository(db)
 	guidanceStepRepo := guidance_step_repository.NewGuidanceStepRepository(db)
+	guardPremiseRepo := guard_premise_repository.NewGuardPremiseRepository(db)
+	guardRepo := guard_repository.NewGuardRepository(db)
 
 	// Initialize services
-	alarmService := alarm_service.NewAlarmService(*alarmRepo, *premiseRepo)
+	alarmService := alarm_service.NewAlarmService(*alarmRepo, *premiseRepo, *producer)
 	premiseService := premise_service.NewPremiseService(*premiseRepo)
 	incidentService := incident_service.NewIncidentService(*incidentRepo, *incidentGuidanceRepo, *userRepo, *guidanceTemplateRepo, *incidentGuidanceStepRepo, *producer)
 	guidanceTemplateService := guidance_template_service.NewGuidanceTemplateService(*guidanceTemplateRepo, *guidanceStepRepo)
 	guidanceStepService := guidance_step_service.NewGuidanceStepService(*guidanceStepRepo)
+	guardService := guard_service.NewGuardService(*guardRepo, *guardPremiseRepo)
 
 	return &Container{
 		// Repositories
@@ -66,6 +75,8 @@ func NewContainer(db *gorm.DB, producer *kafka_client.Producer) *Container {
 		UserRepo:                 userRepo,
 		GuidanceTemplateRepo:     guidanceTemplateRepo,
 		GuidanceStepRepo:         guidanceStepRepo,
+		GuardRepo:                guardRepo,
+		GuardPremiseRepo:         guardPremiseRepo,
 
 		// Services
 		AlarmService:            alarmService,
@@ -73,5 +84,6 @@ func NewContainer(db *gorm.DB, producer *kafka_client.Producer) *Container {
 		IncidentService:         incidentService,
 		GuidanceTemplateService: guidanceTemplateService,
 		GuidanceStepService:     guidanceStepService,
+		GuardService:            guardService,
 	}
 }

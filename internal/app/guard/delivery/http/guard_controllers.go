@@ -1,8 +1,8 @@
 package http
 
 import (
+	"scs-operator/internal/app/guard/dto"
 	services "scs-operator/internal/app/guard/service"
-	"scs-operator/internal/models"
 
 	"github.com/labstack/echo/v4"
 )
@@ -19,7 +19,7 @@ func NewHandler(svc services.Service) *Handler {
 
 func (h *Handler) Create() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		guard := &models.User{Role: "guard"}
+		guard := &dto.CreateGuardDto{}
 		if err := c.Bind(guard); err != nil {
 			return err
 		}
@@ -38,5 +38,18 @@ func (h *Handler) GetGuard() echo.HandlerFunc {
 			return err
 		}
 		return c.JSON(200, guards)
+	}
+}
+func (h *Handler) AssignPremises() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		assignPremisesDto := &dto.AssignPremisesDto{}
+		if err := c.Bind(assignPremisesDto); err != nil {
+			return err
+		}
+		err := h.svc.AssignPremises(c.Request().Context(), assignPremisesDto.GuardID, assignPremisesDto.PremiseID)
+		if err != nil {
+			return err
+		}
+		return c.JSON(200, "success")
 	}
 }

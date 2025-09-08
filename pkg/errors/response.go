@@ -6,6 +6,7 @@ import (
 
 // ErrorResponse represents the structure of error responses sent to clients
 type ErrorResponse struct {
+	Status    int         `json:"status"`
 	Error     ErrorDetail `json:"error"`
 	RequestID string      `json:"request_id,omitempty"`
 	Timestamp time.Time   `json:"timestamp"`
@@ -20,8 +21,8 @@ type ErrorDetail struct {
 
 // ValidationError represents validation error details
 type ValidationError struct {
-	Field   string `json:"field"`
-	Message string `json:"message"`
+	Field   string      `json:"field"`
+	Message string      `json:"message"`
 	Value   interface{} `json:"value,omitempty"`
 }
 
@@ -31,6 +32,7 @@ type ValidationErrors []ValidationError
 // NewErrorResponse creates a new error response
 func NewErrorResponse(appErr *AppError, requestID string) *ErrorResponse {
 	return &ErrorResponse{
+		Status: appErr.StatusCode,
 		Error: ErrorDetail{
 			Type:    appErr.Type,
 			Message: appErr.Message,

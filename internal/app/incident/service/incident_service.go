@@ -7,6 +7,7 @@ import (
 	repo "scs-operator/internal/app/incident/repository"
 	userRepositories "scs-operator/internal/app/user/repository"
 	"scs-operator/internal/models"
+	"scs-operator/internal/types"
 	"scs-operator/pkg/errors"
 	kafka_client "scs-operator/pkg/kafka"
 
@@ -28,11 +29,10 @@ func NewIncidentService(incidentRepo repo.IncidentRepository, incidentGuidanceRe
 }
 
 func (s *Service) CreateIncident(ctx context.Context, createIncidentDto *dto.CreateIncidentDto) (*models.Incident, error) {
-
 	incident := &models.Incident{
 		Name:        createIncidentDto.Name,
 		Description: createIncidentDto.Description,
-		Status:      createIncidentDto.Status,
+		Status:      "new",
 		Severity:    createIncidentDto.Severity,
 		Location:    createIncidentDto.Location,
 		Alarm:       nil,
@@ -49,22 +49,94 @@ func (s *Service) CreateIncident(ctx context.Context, createIncidentDto *dto.Cre
 		return nil, errors.NewDatabaseError("create incident", err)
 	}
 
+	// Validate guidance template ID
+	guidanceTemplateID, err := uuid.Parse(createIncidentDto.GuidanceTemplateID)
+	if err != nil {
+		return nil, errors.NewBadRequestError("Invalid guidance template ID format")
+	}
+	guidanceTemplate, err := s.guidanceTemplateRepo.GetGuidanceTemplateByID(ctx, guidanceTemplateID.String())
+	if err != nil {
+		return nil, errors.NewNotFoundError("guidance template not found")
+	}
+
+	incidentGuidance := &models.IncidentGuidance{
+		IncidentID: &incident.ID,
+		Incident:   incident,
+	}
+	incidentGuidance.GuidanceTemplateID = &guidanceTemplate.ID
+	incidentGuidance.GuidanceTemplate = guidanceTemplate
+	// Validate guidance assignee
+	assigneeId, err := uuid.Parse(createIncidentDto.Assignee)
+	if err != nil {
+		return nil, errors.NewBadRequestError("Invalid assignee ID format")
+	}
+	assigneeInfo, err := s.userRepo.GetUserByID(ctx, assigneeId.String())
+	if err != nil {
+		return nil, errors.NewNotFoundError("assignee not found")
+	}
+	incidentGuidance.AssigneeID = &assigneeInfo.ID
+	incidentGuidance.Assignee = assigneeInfo
+
+	createdIncidentGuidance, err := s.incidentGuidanceRepo.CreateIncidentGuidance(ctx, incidentGuidance)
+	if err != nil {
+		return nil, errors.NewDatabaseError("assign guidance", err)
+	}
+	steps := []models.IncidentGuidanceStep{}
+	for _, step := range guidanceTemplate.GuidanceSteps {
+		steps = append(steps, models.IncidentGuidanceStep{
+			IncidentGuidanceID: createdIncidentGuidance.ID,
+			StepNumber:         int64(step.StepNumber),
+			Title:              step.Title,
+			Description:        step.Description,
+			IsCompleted:        false,
+		})
+	}
+
+	_, _ = s.incidentGuidanceStepRepo.CreateIncidentGuidanceSteps(ctx, steps)
+	// Send Kafka message
+	// producerMessage := kafka.Message{
+	// 	Key:   []byte(incident.ID.String()),
+	// 	Value: []byte("Incident guidance assigned"),
+	// }
+	// if err := s.producer.WriteMessages(ctx, producerMessage); err != nil {
+	// 	return nil, errors.NewAppError(errors.ErrorTypeInternal, "Failed to send Kafka message", err)
+	// }
+
 	return createdIncident, nil
 }
 
-func (s *Service) GetIncidents(ctx context.Context) ([]models.Incident, error) {
-	incidents, err := s.incidentRepo.GetIncidents(ctx)
+func (s *Service) GetIncidents(ctx context.Context, page int, limit int) (*types.PaginateResponse[models.Incident], error) {
+	incidents, err := s.incidentRepo.GetIncidents(ctx, page, limit)
+
 	if err != nil {
 		return nil, errors.NewDatabaseError("get incidents", err)
 	}
-	return incidents, nil
+	total, err := s.incidentRepo.GetIncidentsCount(ctx)
+	totalPages := int(total) / limit
+	if total%int64(limit) != 0 {
+		totalPages++
+	}
+
+	if err != nil {
+		return nil, errors.NewDatabaseError("get incidents count", err)
+	}
+	paginateResponse := types.PaginateResponse[models.Incident]{
+		Pagination: types.Pagination{
+			TotalPages: int(totalPages),
+			Page:       page,
+			Limit:      limit,
+		},
+		Data: incidents,
+	}
+	return &paginateResponse, nil
 }
 
 func (s *Service) GetIncidentByID(ctx context.Context, id string) (*models.Incident, error) {
 	incident, err := s.incidentRepo.GetIncidentByID(ctx, id)
 	if err != nil {
-		return nil, errors.NewDatabaseError("get incident", err)
+		return nil, errors.NewNotFoundError("get incident")
 	}
+
 	return incident, nil
 }
 

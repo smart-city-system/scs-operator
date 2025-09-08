@@ -5,6 +5,7 @@ import (
 	services "scs-operator/internal/app/incident/service"
 	"scs-operator/pkg/errors"
 	"scs-operator/pkg/validation"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
@@ -60,7 +61,24 @@ func (h *Handler) UpdateIncident() echo.HandlerFunc {
 
 func (h *Handler) GetIncidents() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		incidents, err := h.svc.GetIncidents(c.Request().Context())
+		page := c.QueryParam("page")
+		limit := c.QueryParam("limit")
+		if page == "" {
+			page = "1"
+		}
+		if limit == "" {
+			limit = "10"
+		}
+		pageInt, err := strconv.Atoi(page)
+		if err != nil {
+			return errors.NewBadRequestError("Invalid page number")
+		}
+		limitInt, err := strconv.Atoi(limit)
+		if err != nil {
+			return errors.NewBadRequestError("Invalid limit number")
+		}
+
+		incidents, err := h.svc.GetIncidents(c.Request().Context(), pageInt, limitInt)
 		if err != nil {
 			return err
 		}

@@ -13,9 +13,13 @@ import (
 
 	alarmsHttp "scs-operator/internal/app/alarm/delivery/http"
 
-	middleware "scs-operator/internal/middlewares"
+	guardsHttp "scs-operator/internal/app/guard/delivery/http"
+
+	myMiddleware "scs-operator/internal/middlewares"
 
 	"github.com/labstack/echo/v4"
+
+	"github.com/labstack/echo/v4/middleware"
 )
 
 func (s *Server) MapHandlers(e *echo.Echo) error {
@@ -26,18 +30,29 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 	guidanceTemplatesHandlers := guidanceTemplatesHttp.NewHandler(*s.container.GuidanceTemplateService)
 	guidanceStepsHandlers := guidanceStepsHttp.NewHandler(*s.container.GuidanceStepService)
 	alarmsHandlers := alarmsHttp.NewHandler(*s.container.AlarmService)
+	guardsHandlers := guardsHttp.NewHandler(*s.container.GuardService)
 
-	mw := middleware.NewMiddlewareManager(s.cfg, []string{"*"}, s.logger)
+	// Enable CORS for all origins
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete, http.MethodOptions, http.MethodPatch},
+		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
+		AllowCredentials: false,
+	}))
+
+	mw := myMiddleware.NewMiddlewareManager(s.cfg, []string{"*"}, s.logger)
 	e.Use(mw.RequestLoggerMiddleware)
 	e.Use(mw.ErrorHandlerMiddleware)
+	e.Use(mw.ResponseStandardizer)
 	v1 := e.Group("/api/v1")
 
 	health := v1.Group("/health")
-	premisesGroup := v1.Group("/premises", mw.JWTAuth)
+	premisesGroup := v1.Group("/premises")
 	incidentsGroup := v1.Group("/incidents", mw.JWTAuth)
 	guidanceTemplatesGroup := v1.Group("/guidance-templates", mw.JWTAuth)
 	guidanceStepsGroup := v1.Group("/guidance-steps", mw.JWTAuth)
 	alarmsGroup := v1.Group("/alarms", mw.JWTAuth)
+	guardsGroup := v1.Group("/guards", mw.JWTAuth)
 
 	health.GET("", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]string{"status": "OK"})
@@ -47,6 +62,7 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 	guidanceTemplatesHandlers.RegisterRoutes(guidanceTemplatesGroup)
 	guidanceStepsHandlers.RegisterRoutes(guidanceStepsGroup)
 	alarmsHandlers.RegisterRoutes(alarmsGroup)
+	guardsHandlers.RegisterRoutes(guardsGroup)
 	return nil
 
 }

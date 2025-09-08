@@ -22,9 +22,13 @@ func (r *AlarmRepository) CreateAlarm(ctx context.Context, Alarm *models.Alarm) 
 	}
 	return Alarm, nil
 }
-func (r *AlarmRepository) GetAlarms(ctx context.Context) ([]models.Alarm, error) {
+func (r *AlarmRepository) GetAlarms(ctx context.Context, status string) ([]models.Alarm, error) {
 	var Alarms []models.Alarm
-	if err := r.db.WithContext(ctx).Find(&Alarms).Error; err != nil {
+	query := r.db.WithContext(ctx).Preload("Premise")
+	if status != "" {
+		query = query.Where("status = ?", status)
+	}
+	if err := query.Find(&Alarms).Error; err != nil {
 		return nil, fmt.Errorf("failed to get Alarms: %w", err)
 	}
 	return Alarms, nil
@@ -38,4 +42,12 @@ func (r *AlarmRepository) GetAlarmByID(ctx context.Context, id string) (*models.
 	}
 
 	return &Alarm, nil
+}
+
+func (r *AlarmRepository) UpdateAlarm(ctx context.Context, id string, Alarm *models.Alarm) (*models.Alarm, error) {
+	result := r.db.WithContext(ctx).Model(&models.Alarm{}).Where("id = ?", id).Updates(Alarm)
+	if result.Error != nil {
+		return nil, fmt.Errorf("failed to update Alarm: %w", result.Error)
+	}
+	return Alarm, nil
 }

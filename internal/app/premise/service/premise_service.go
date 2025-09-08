@@ -5,6 +5,7 @@ import (
 	"scs-operator/internal/app/premise/dto"
 	repositories "scs-operator/internal/app/premise/repository"
 	"scs-operator/internal/models"
+	"scs-operator/internal/types"
 	"scs-operator/pkg/errors"
 
 	"github.com/google/uuid"
@@ -44,10 +45,35 @@ func (s *Service) CreatePremise(ctx context.Context, createPremiseDto *dto.Creat
 	return createdPremise, nil
 }
 
-func (s *Service) GetPremises(ctx context.Context) ([]models.Premise, error) {
-	premises, err := s.premiseRepo.GetPremises(ctx)
+func (s *Service) GetPremises(ctx context.Context, page int, limit int) (*types.PaginateResponse[models.Premise], error) {
+	premises, err := s.premiseRepo.GetPremises(ctx, page, limit)
 	if err != nil {
 		return nil, errors.NewDatabaseError("get premises", err)
 	}
-	return premises, nil
+	total, err := s.premiseRepo.GetPremisesCount(ctx)
+	totalPages := int(total) / limit
+	if total%int64(limit) != 0 {
+		totalPages++
+	}
+
+	if err != nil {
+		return nil, errors.NewDatabaseError("get premises count", err)
+	}
+	paginateResponse := &types.PaginateResponse[models.Premise]{
+		Pagination: types.Pagination{
+			TotalPages: int(totalPages),
+			Page:       page,
+			Limit:      limit,
+		},
+		Data: premises,
+	}
+	return paginateResponse, nil
+}
+
+func (s *Service) GetAvailableGuards(ctx context.Context, premiseID string) ([]models.User, error) {
+	guards, err := s.premiseRepo.GetAvailableGuards(ctx, premiseID)
+	if err != nil {
+		return nil, errors.NewDatabaseError("get available guards", err)
+	}
+	return guards, nil
 }

@@ -5,6 +5,7 @@ import (
 	services "scs-operator/internal/app/premise/service"
 	"scs-operator/pkg/errors"
 	"scs-operator/pkg/validation"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
@@ -41,10 +42,36 @@ func (h *Handler) CreatePremise() echo.HandlerFunc {
 
 func (h *Handler) GetPremises() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		premises, err := h.svc.GetPremises(c.Request().Context())
+		page := c.QueryParam("page")
+		limit := c.QueryParam("limit")
+		if page == "" {
+			page = "1"
+		}
+		if limit == "" {
+			limit = "10"
+		}
+		pageInt, err := strconv.Atoi(page)
+		if err != nil {
+			return errors.NewBadRequestError("Invalid page number")
+		}
+		limitInt, err := strconv.Atoi(limit)
+		if err != nil {
+			return errors.NewBadRequestError("Invalid limit number")
+		}
+		premises, err := h.svc.GetPremises(c.Request().Context(), pageInt, limitInt)
 		if err != nil {
 			return err
 		}
 		return c.JSON(200, premises)
+	}
+}
+func (h *Handler) GetAvailableGuards() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		premiseID := c.Param("id")
+		guards, err := h.svc.GetAvailableGuards(c.Request().Context(), premiseID)
+		if err != nil {
+			return err
+		}
+		return c.JSON(200, guards)
 	}
 }

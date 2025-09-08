@@ -57,6 +57,7 @@ func main() {
 		&models.GuidanceTemplate{},
 		&models.GuidanceStep{},
 		&models.IncidentMedia{},
+		&models.GuardPremise{},
 	)
 	if err != nil {
 		appLogger.Fatalf("Database migration failed: %s", err)
@@ -150,7 +151,7 @@ func startKafkaConsumer(topic string, cfg *config.Config, logger *logger.ApiLogg
 	// Use the shared alarm service instead of creating new instances
 	processor := processor.NewAlarmProcessor(*container.AlarmService, logger)
 
-	consumer := kafka_client.NewConsumer(&kafkaCfg, &consumerCfg, &processor)
+	consumer := kafka_client.NewConsumer(&kafkaCfg, &consumerCfg)
 	defer func() {
 		logger.Info("Closing Kafka consumer...")
 		if err := consumer.Close(); err != nil {

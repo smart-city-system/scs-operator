@@ -15,4 +15,6 @@ type Alarm struct {
 	Description string    `json:"description"`
 	Severity    string    `json:"severity" gorm:"check:severity IN ('low', 'medium', 'high')"`
 	TriggeredAt time.Time `json:"triggered_at" gorm:"type:timestamptz;default:CURRENT_TIMESTAMP"`
+	Device      string    `json:"device"`
+	Status      string    `json:"status" gorm:"check:status IN ('new', 'ignored', 'dispatched')"`
 }
