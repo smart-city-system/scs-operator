@@ -31,15 +31,6 @@ func (h *Handler) Create() echo.HandlerFunc {
 	}
 }
 
-func (h *Handler) GetGuard() echo.HandlerFunc {
-	return func(c echo.Context) error {
-		guards, err := h.svc.GetGuards(c.Request().Context())
-		if err != nil {
-			return err
-		}
-		return c.JSON(200, guards)
-	}
-}
 func (h *Handler) AssignPremises() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		assignPremisesDto := &dto.AssignPremisesDto{}

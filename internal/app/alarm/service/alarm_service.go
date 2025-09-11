@@ -7,6 +7,7 @@ import (
 	alarmRepositories "scs-operator/internal/app/alarm/repository"
 	premiseRepositories "scs-operator/internal/app/premise/repository"
 	"scs-operator/internal/models"
+	"scs-operator/internal/types"
 	"scs-operator/pkg/errors"
 	kafka_client "scs-operator/pkg/kafka"
 	"time"
@@ -58,9 +59,14 @@ func (s *Service) CreateAlarm(ctx context.Context, createAlarmDto *dto.CreateAla
 	if err != nil {
 		return nil, errors.NewDatabaseError("create alarm", err)
 	}
+	message := types.Message[models.Alarm]{
+		Type:    "alarm.created",
+		Payload: *createdAlarm,
+	}
+	messageBytes, err := json.Marshal(message)
 
 	// Send Kafka message after successful alarm creation
-	alarmData, err := json.Marshal(createdAlarm)
+
 	if err != nil {
 		// Log error but don't fail the operation since alarm was created successfully
 		// You might want to add proper logging here
@@ -69,7 +75,7 @@ func (s *Service) CreateAlarm(ctx context.Context, createAlarmDto *dto.CreateAla
 
 	producerMessage := kafka.Message{
 		Key:   []byte(createdAlarm.ID.String()),
-		Value: alarmData,
+		Value: messageBytes,
 	}
 
 	if err := s.producer.WriteMessages(ctx, producerMessage); err != nil {

@@ -6,6 +6,7 @@ import (
 	"scs-operator/internal/app/user/dto"
 	repositories "scs-operator/internal/app/user/repository"
 	"scs-operator/internal/models"
+	"scs-operator/internal/types"
 	"scs-operator/pkg/errors"
 	"scs-operator/pkg/utils"
 )
@@ -46,12 +47,29 @@ func (s *Service) CreateUser(ctx context.Context, createUserDto *dto.CreateUserD
 	return createdUser, nil
 }
 
-func (s *Service) GetUsers(ctx context.Context) ([]models.User, error) {
-	users, err := s.userRepo.GetUsers(ctx)
+func (s *Service) GetUsers(ctx context.Context, page int, limit int) (*types.PaginateResponse[models.User], error) {
+	users, err := s.userRepo.GetUsers(ctx, page, limit)
 	if err != nil {
 		return nil, errors.NewDatabaseError("get users", err)
 	}
-	return users, nil
+	total, err := s.userRepo.GetUsersCount(ctx)
+	totalPages := int(total) / limit
+	if total%int64(limit) != 0 {
+		totalPages++
+	}
+
+	if err != nil {
+		return nil, errors.NewDatabaseError("get users count", err)
+	}
+	paginateResponse := &types.PaginateResponse[models.User]{
+		Pagination: types.Pagination{
+			TotalPages: int(totalPages),
+			Page:       page,
+			Limit:      limit,
+		},
+		Data: users,
+	}
+	return paginateResponse, nil
 }
 
 func (s *Service) GetAssignments(ctx context.Context, userID string) ([]models.IncidentGuidance, error) {

@@ -22,10 +22,18 @@ func (r *GuardRepository) Create(ctx context.Context, guard *models.User) (*mode
 	}
 	return guard, nil
 }
-func (r *GuardRepository) GetGuards(ctx context.Context) ([]models.User, error) {
+func (r *GuardRepository) GetGuards(ctx context.Context, page int, limit int) ([]models.User, error) {
 	var guards []models.User
-	if err := r.db.WithContext(ctx).Where("role = ?", "guard").Find(&guards).Error; err != nil {
+	if err := r.db.WithContext(ctx).Limit(limit).Offset((page - 1) * limit).Where("role = 'guard'").Find(&guards).Error; err != nil {
 		return nil, fmt.Errorf("failed to get users: %w", err)
 	}
 	return guards, nil
+}
+
+func (r *GuardRepository) GetGuardsCount(ctx context.Context) (int64, error) {
+	var count int64
+	if err := r.db.WithContext(ctx).Model(&models.User{}).Count(&count).Error; err != nil {
+		return 0, fmt.Errorf("failed to get guards count: %w", err)
+	}
+	return count, nil
 }

@@ -40,10 +40,6 @@ func (s *Service) Create(ctx context.Context, createGuardDto *dto.CreateGuardDto
 
 }
 
-func (s *Service) GetGuards(ctx context.Context) ([]models.User, error) {
-	return s.guardRepo.GetGuards(ctx)
-}
-
 func (s *Service) AssignPremises(ctx context.Context, guardID string, premiseID string) error {
 	guard, err := uuid.Parse(guardID)
 	if err != nil {
