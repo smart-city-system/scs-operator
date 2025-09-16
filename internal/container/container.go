@@ -43,7 +43,6 @@ type Container struct {
 	GuardService            *guard_service.Service
 }
 
-// NewContainer creates a new dependency container with all repositories and services
 func NewContainer(db *gorm.DB, producer *kafka_client.Producer) *Container {
 	// Initialize repositories
 	alarmRepo := alarm_repository.NewAlarmRepository(db)
