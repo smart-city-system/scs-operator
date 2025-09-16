@@ -222,3 +222,16 @@ func (s *Service) UpdateIncident(ctx context.Context, id string, updateIncidentD
 	}
 	return updatedIncident, nil
 }
+
+func (s *Service) CompleteIncident(ctx context.Context, incidentID string) error {
+	incident, err := s.incidentRepo.GetIncidentByID(ctx, incidentID)
+	if err != nil {
+		return errors.NewNotFoundError("incident not found")
+	}
+	incident.Status = "resolved"
+	_, err = s.incidentRepo.UpdateIncident(ctx, incidentID, incident)
+	if err != nil {
+		return errors.NewDatabaseError("update incident", err)
+	}
+	return nil
+}

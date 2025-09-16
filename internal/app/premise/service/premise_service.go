@@ -12,11 +12,12 @@ import (
 )
 
 type Service struct {
-	premiseRepo repositories.PremiseRepository
+	premiseRepo      repositories.PremiseRepository
+	premiseUsersRepo repositories.PremiseUsersRepository
 }
 
-func NewPremiseService(premiseRepo repositories.PremiseRepository) *Service {
-	return &Service{premiseRepo: premiseRepo}
+func NewPremiseService(premiseRepo repositories.PremiseRepository, premiseUsersRepo repositories.PremiseUsersRepository) *Service {
+	return &Service{premiseRepo: premiseRepo, premiseUsersRepo: premiseUsersRepo}
 }
 
 func (s *Service) CreatePremise(ctx context.Context, createPremiseDto *dto.CreatePremiseDto) (*models.Premise, error) {
@@ -69,11 +70,74 @@ func (s *Service) GetPremises(ctx context.Context, page int, limit int) (*types.
 	}
 	return paginateResponse, nil
 }
+func (s *Service) GetPremiseByID(ctx context.Context, id string) (*models.Premise, error) {
+	premise, err := s.premiseRepo.GetPremiseByID(ctx, id)
+	if err != nil {
+		return nil, errors.NewNotFoundError("premise")
+	}
+	return premise, nil
+}
 
-func (s *Service) GetAvailableGuards(ctx context.Context, premiseID string) ([]models.User, error) {
-	guards, err := s.premiseRepo.GetAvailableGuards(ctx, premiseID)
+func (s *Service) GetAvailableUsers(ctx context.Context, premiseID string) ([]models.User, error) {
+	guards, err := s.premiseRepo.GetAvailableUsers(ctx, premiseID)
 	if err != nil {
 		return nil, errors.NewDatabaseError("get available guards", err)
 	}
 	return guards, nil
+}
+func (s *Service) UpdatePremise(ctx context.Context, id string, updatePremiseDto *dto.UpdatePremiseDto) (*models.Premise, error) {
+	premise, err := s.premiseRepo.GetPremiseByID(ctx, id)
+	if err != nil {
+		return nil, errors.NewNotFoundError("premise")
+	}
+	premise.Name = updatePremiseDto.Name
+	premise.Address = updatePremiseDto.Address
+	updatedPremise, err := s.premiseRepo.UpdatePremise(ctx, id, premise)
+	if err != nil {
+		return nil, errors.NewDatabaseError("update premise", err)
+	}
+	return updatedPremise, nil
+}
+func (s *Service) AssignUsers(ctx context.Context, premiseID string, updatePremiseUserDto *dto.UpdatePremiseUserDto) error {
+	premise, err := s.premiseRepo.GetPremiseByID(ctx, premiseID)
+	if err != nil {
+		return errors.NewNotFoundError("premise")
+	}
+
+	// Get added users
+	addedUsers := []models.UserPremise{}
+	for _, userID := range updatePremiseUserDto.AddedUsers {
+		userID, err := uuid.Parse(userID)
+		if err != nil {
+			return errors.NewBadRequestError("Invalid user ID format")
+		}
+		addedUser := models.UserPremise{
+			UserID:    userID,
+			PremiseID: premise.ID,
+		}
+		addedUsers = append(addedUsers, addedUser)
+
+	}
+	// Get removed users
+	removedUsers := []string{}
+	for _, userID := range updatePremiseUserDto.RemovedUsers {
+		userID, err := uuid.Parse(userID)
+		if err != nil {
+			return errors.NewBadRequestError("Invalid user ID format")
+		}
+		removedUsers = append(removedUsers, userID.String())
+	}
+	if len(addedUsers) > 0 {
+		err = s.premiseUsersRepo.CreatePremiseUsers(ctx, addedUsers)
+		if err != nil {
+			return errors.NewDatabaseError("add premise users", err)
+		}
+	}
+	if (len(removedUsers) > 0) && (removedUsers[0] != "") {
+		err = s.premiseUsersRepo.RemovePremiseUsersByUserIds(ctx, removedUsers)
+		if err != nil {
+			return errors.NewDatabaseError("remove premise users", err)
+		}
+	}
+	return nil
 }

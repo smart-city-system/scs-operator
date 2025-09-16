@@ -6,8 +6,6 @@ import (
 	repositories "scs-operator/internal/app/guard/repository"
 	"scs-operator/internal/models"
 	"scs-operator/pkg/utils"
-
-	"github.com/google/uuid"
 )
 
 type Service struct {
@@ -40,31 +38,31 @@ func (s *Service) Create(ctx context.Context, createGuardDto *dto.CreateGuardDto
 
 }
 
-func (s *Service) AssignPremises(ctx context.Context, guardID string, premiseID string) error {
-	guard, err := uuid.Parse(guardID)
-	if err != nil {
-		return err
-	}
-	premise, err := uuid.Parse(premiseID)
-	if err != nil {
-		return err
-	}
-	guardPremise := &models.GuardPremise{
-		GuardID:   guard,
-		PremiseID: premise,
-	}
-	// Check if the guard is already assigned to the premise
-	exists, err := s.guardPremiseRepo.CheckExist(ctx, guardPremise)
-	if err != nil {
-		return err
-	}
-	if exists {
-		return nil
-	}
+// func (s *Service) AssignPremises(ctx context.Context, guardID string, premiseID string) error {
+// 	guard, err := uuid.Parse(guardID)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	premise, err := uuid.Parse(premiseID)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	guardPremise := &models.UserPremise{
+// 		UserID:    guard,
+// 		PremiseID: premise,
+// 	}
+// 	// Check if the guard is already assigned to the premise
+// 	exists, err := s.guardPremiseRepo.CheckExist(ctx, guardPremise)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	if exists {
+// 		return nil
+// 	}
 
-	_, err = s.guardPremiseRepo.AssignPremises(ctx, guardPremise)
-	if err != nil {
-		return err
-	}
-	return nil
-}
+// 	_, err = s.guardPremiseRepo.AssignPremises(ctx, guardPremise)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	return nil
+// }

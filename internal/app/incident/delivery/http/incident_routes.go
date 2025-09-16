@@ -10,5 +10,6 @@ func (h *Handler) RegisterRoutes(g *echo.Group) {
 	g.GET("/:id", h.GetIncident())
 	g.POST("/:id/assign-guidance", h.AssignGuidance())
 	g.GET("/:id/guidance", h.GetIncidentGuidance())
+	g.PATCH("/:id/complete", h.CompleteIncident())
 	g.PATCH("/:id", h.UpdateIncident())
 }

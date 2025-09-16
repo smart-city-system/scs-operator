@@ -59,3 +59,24 @@ func (h *Handler) GetGuidanceGuidanceTemplate() echo.HandlerFunc {
 		return c.JSON(200, guidanceTemplate)
 	}
 }
+
+func (h *Handler) UpdateGuidanceTemplate() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		guidanceTemplateID := c.Param("id")
+		updateGuidanceTemplateDto := &dto.UpdateGuidanceTemplateDto{}
+		if err := c.Bind(updateGuidanceTemplateDto); err != nil {
+			return errors.NewBadRequestError("Invalid request body")
+		}
+
+		// Validate the DTO
+		if err := validation.ValidateStruct(updateGuidanceTemplateDto); err != nil {
+			return err
+		}
+		updatedGuidanceTemplate, err := h.svc.UpdateGuidanceTemplate(c.Request().Context(), guidanceTemplateID, updateGuidanceTemplateDto)
+		if err != nil {
+			return err
+		}
+		return c.JSON(200, updatedGuidanceTemplate)
+
+	}
+}

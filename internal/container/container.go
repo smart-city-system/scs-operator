@@ -48,6 +48,7 @@ func NewContainer(db *gorm.DB, producer *kafka_client.Producer) *Container {
 	// Initialize repositories
 	alarmRepo := alarm_repository.NewAlarmRepository(db)
 	premiseRepo := premise_repository.NewPremiseRepository(db)
+	premiseUsersRepo := premise_repository.NewPremiseUsersRepository(db)
 	incidentRepo := incident_repository.NewIncidentRepository(db)
 	incidentGuidanceRepo := incident_repository.NewIncidentGuidanceRepository(db)
 	incidentGuidanceStepRepo := incident_repository.NewIncidentGuidanceStepRepository(db)
@@ -59,7 +60,7 @@ func NewContainer(db *gorm.DB, producer *kafka_client.Producer) *Container {
 
 	// Initialize services
 	alarmService := alarm_service.NewAlarmService(*alarmRepo, *premiseRepo, *producer)
-	premiseService := premise_service.NewPremiseService(*premiseRepo)
+	premiseService := premise_service.NewPremiseService(*premiseRepo, *premiseUsersRepo)
 	incidentService := incident_service.NewIncidentService(*incidentRepo, *incidentGuidanceRepo, *userRepo, *guidanceTemplateRepo, *incidentGuidanceStepRepo, *producer)
 	guidanceTemplateService := guidance_template_service.NewGuidanceTemplateService(*guidanceTemplateRepo, *guidanceStepRepo)
 	guidanceStepService := guidance_step_service.NewGuidanceStepService(*guidanceStepRepo)

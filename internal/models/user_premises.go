@@ -2,10 +2,10 @@ package models
 
 import "github.com/google/uuid"
 
-type GuardPremise struct {
+type UserPremise struct {
 	Base
-	GuardID   uuid.UUID `json:"guard_id"`
-	Guard     *User     `json:"guard,omitempty" gorm:"foreignKey:GuardID"`
+	UserID    uuid.UUID `json:"user_id"`
+	User      *User     `json:"user,omitempty" gorm:"foreignKey:UserID"`
 	PremiseID uuid.UUID `json:"premise_id"`
 	Premise   *Premise  `json:"premise,omitempty" gorm:"foreignKey:PremiseID"`
 }

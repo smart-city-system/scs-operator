@@ -57,7 +57,7 @@ func main() {
 		&models.GuidanceTemplate{},
 		&models.GuidanceStep{},
 		&models.IncidentMedia{},
-		&models.GuardPremise{},
+		&models.UserPremise{},
 	)
 	if err != nil {
 		appLogger.Fatalf("Database migration failed: %s", err)

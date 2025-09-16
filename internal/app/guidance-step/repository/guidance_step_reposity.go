@@ -44,3 +44,17 @@ func (r *GuidanceStepRepository) CreateGuidanceSteps(ctx context.Context, steps 
 	}
 	return steps, nil
 }
+
+func (r *GuidanceStepRepository) UpdateGuidanceStep(ctx context.Context, id string, guidanceStep *models.GuidanceStep) error {
+	result := r.db.WithContext(ctx).Model(&models.GuidanceStep{}).Where("id = ?", id).Updates(guidanceStep)
+	if result.Error != nil {
+		return fmt.Errorf("failed to update guidance step: %w", result.Error)
+	}
+	return nil
+}
+func (r *GuidanceStepRepository) DeleteGuidanceSteps(ctx context.Context, ids []string) error {
+	if err := r.db.WithContext(ctx).Delete(&models.GuidanceStep{}, "id IN ?", ids).Error; err != nil {
+		return fmt.Errorf("failed to delete guidance steps: %w", err)
+	}
+	return nil
+}

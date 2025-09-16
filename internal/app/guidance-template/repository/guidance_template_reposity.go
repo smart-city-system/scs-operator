@@ -37,3 +37,11 @@ func (r *GuidanceTemplateRepository) GetGuidanceTemplateByID(ctx context.Context
 	}
 	return &GuidanceTemplate, nil
 }
+
+func (r *GuidanceTemplateRepository) UpdateGuidanceTemplate(ctx context.Context, id string, guidanceTemplate *models.GuidanceTemplate) (*models.GuidanceTemplate, error) {
+	result := r.db.WithContext(ctx).Model(&models.GuidanceTemplate{}).Where("id = ?", id).Updates(guidanceTemplate)
+	if result.Error != nil {
+		return nil, fmt.Errorf("failed to update guidance template: %w", result.Error)
+	}
+	return guidanceTemplate, nil
+}

@@ -6,5 +6,5 @@ import (
 
 func (h *Handler) RegisterRoutes(g *echo.Group) {
 	g.POST("", h.Create())
-	g.POST("/assign-premises", h.AssignPremises())
+	// g.POST("/assign-premises", h.AssignPremises())
 }

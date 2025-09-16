@@ -31,16 +31,16 @@ func (h *Handler) Create() echo.HandlerFunc {
 	}
 }
 
-func (h *Handler) AssignPremises() echo.HandlerFunc {
-	return func(c echo.Context) error {
-		assignPremisesDto := &dto.AssignPremisesDto{}
-		if err := c.Bind(assignPremisesDto); err != nil {
-			return err
-		}
-		err := h.svc.AssignPremises(c.Request().Context(), assignPremisesDto.GuardID, assignPremisesDto.PremiseID)
-		if err != nil {
-			return err
-		}
-		return c.JSON(200, "success")
-	}
-}
+// func (h *Handler) AssignPremises() echo.HandlerFunc {
+// 	return func(c echo.Context) error {
+// 		assignPremisesDto := &dto.AssignPremisesDto{}
+// 		if err := c.Bind(assignPremisesDto); err != nil {
+// 			return err
+// 		}
+// 		err := h.svc.AssignPremises(c.Request().Context(), assignPremisesDto.GuardID, assignPremisesDto.PremiseID)
+// 		if err != nil {
+// 			return err
+// 		}
+// 		return c.JSON(200, "success")
+// 	}
+// }

@@ -24,7 +24,7 @@ func (r *IncidentRepository) CreateIncident(ctx context.Context, Incident *model
 }
 func (r *IncidentRepository) GetIncidents(ctx context.Context, page int, limit int) ([]models.Incident, error) {
 	var Incidents []models.Incident
-	if err := r.db.WithContext(ctx).Limit(limit).Offset((page - 1) * limit).Preload("IncidentGuidance").Preload("IncidentGuidance.Assignee").Find(&Incidents).Error; err != nil {
+	if err := r.db.WithContext(ctx).Limit(limit).Offset((page - 1) * limit).Preload("IncidentGuidance").Preload("IncidentGuidance.Assignee").Order("created_at desc").Find(&Incidents).Error; err != nil {
 		return nil, fmt.Errorf("failed to get Incidents: %w", err)
 	}
 	return Incidents, nil

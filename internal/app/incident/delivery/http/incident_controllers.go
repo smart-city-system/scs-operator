@@ -125,3 +125,13 @@ func (h *Handler) GetIncidentGuidance() echo.HandlerFunc {
 		return c.JSON(200, incidentGuidance)
 	}
 }
+func (h *Handler) CompleteIncident() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		incidentID := c.Param("id")
+		err := h.svc.CompleteIncident(c.Request().Context(), incidentID)
+		if err != nil {
+			return err
+		}
+		return c.JSON(200, "success")
+	}
+}

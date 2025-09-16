@@ -65,13 +65,64 @@ func (h *Handler) GetPremises() echo.HandlerFunc {
 		return c.JSON(200, premises)
 	}
 }
-func (h *Handler) GetAvailableGuards() echo.HandlerFunc {
+func (h *Handler) GetPremise() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		premiseID := c.Param("id")
-		guards, err := h.svc.GetAvailableGuards(c.Request().Context(), premiseID)
+		premise, err := h.svc.GetPremiseByID(c.Request().Context(), premiseID)
+		if err != nil {
+			return err
+		}
+		return c.JSON(200, premise)
+	}
+}
+func (h *Handler) GetAvailableUsers() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		premiseID := c.Param("id")
+		guards, err := h.svc.GetAvailableUsers(c.Request().Context(), premiseID)
 		if err != nil {
 			return err
 		}
 		return c.JSON(200, guards)
+	}
+}
+
+func (h *Handler) UpdatePremise() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		premiseID := c.Param("id")
+		updatePremiseDto := &dto.UpdatePremiseDto{}
+		if err := c.Bind(updatePremiseDto); err != nil {
+			return errors.NewBadRequestError("Invalid request body")
+		}
+
+		// Validate the DTO
+		if err := validation.ValidateStruct(updatePremiseDto); err != nil {
+			return err
+		}
+		updatedPremise, err := h.svc.UpdatePremise(c.Request().Context(), premiseID, updatePremiseDto)
+		if err != nil {
+			return err
+		}
+		return c.JSON(200, updatedPremise)
+
+	}
+}
+func (h *Handler) AssignUsers() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		premiseID := c.Param("id")
+		updatePremiseUserDto := &dto.UpdatePremiseUserDto{}
+		if err := c.Bind(updatePremiseUserDto); err != nil {
+			return errors.NewBadRequestError("Invalid request body")
+		}
+
+		// Validate the DTO
+		if err := validation.ValidateStruct(updatePremiseUserDto); err != nil {
+			return err
+		}
+		err := h.svc.AssignUsers(c.Request().Context(), premiseID, updatePremiseUserDto)
+		if err != nil {
+			return err
+		}
+		return c.JSON(200, "success")
+
 	}
 }

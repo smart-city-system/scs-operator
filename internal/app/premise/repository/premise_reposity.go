@@ -48,12 +48,20 @@ func (r *PremiseRepository) GetPremiseByID(ctx context.Context, id string) (*mod
 
 	return &Premise, nil
 }
-func (r *PremiseRepository) GetAvailableGuards(ctx context.Context, premiseID string) ([]models.User, error) {
-	var guards []models.User
-	if err := r.db.WithContext(ctx).Joins("JOIN guard_premises ON users.id = guard_premises.guard_id").
-		Where("guard_premises.premise_id = ?", premiseID).
-		Find(&guards).Error; err != nil {
-		return nil, fmt.Errorf("failed to get guards: %w", err)
+func (r *PremiseRepository) GetAvailableUsers(ctx context.Context, premiseID string) ([]models.User, error) {
+	var users []models.User
+	if err := r.db.WithContext(ctx).Joins("JOIN user_premises ON users.id = user_premises.user_id").
+		Where("user_premises.premise_id = ?", premiseID).
+		Find(&users).Error; err != nil {
+		return nil, fmt.Errorf("failed to get users: %w", err)
 	}
-	return guards, nil
+	return users, nil
+}
+
+func (r *PremiseRepository) UpdatePremise(ctx context.Context, id string, premise *models.Premise) (*models.Premise, error) {
+	result := r.db.WithContext(ctx).Model(&models.Premise{}).Where("id = ?", id).Updates(premise)
+	if result.Error != nil {
+		return nil, fmt.Errorf("failed to update premise: %w", result.Error)
+	}
+	return premise, nil
 }
