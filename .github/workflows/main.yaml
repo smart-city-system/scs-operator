@@ -42,7 +42,6 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./docker/service.Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: erik1303/scss:scs-operator
 
