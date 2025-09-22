@@ -18,8 +18,8 @@ import (
 	myMiddleware "scs-operator/internal/middlewares"
 
 	"github.com/labstack/echo/v4"
-
 	"github.com/labstack/echo/v4/middleware"
+	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
 func (s *Server) MapHandlers(e *echo.Echo) error {
@@ -44,6 +44,10 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 	e.Use(mw.RequestLoggerMiddleware)
 	e.Use(mw.ErrorHandlerMiddleware)
 	e.Use(mw.ResponseStandardizer)
+
+	// Swagger documentation route
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
+
 	v1 := e.Group("/api/v1")
 
 	health := v1.Group("/health")
@@ -54,6 +58,14 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 	alarmsGroup := v1.Group("/alarms", mw.JWTAuth)
 	guardsGroup := v1.Group("/guards", mw.JWTAuth)
 
+	// Health check endpoint
+	// @Summary Health Check
+	// @Description Get the health status of the API
+	// @Tags health
+	// @Accept json
+	// @Produce json
+	// @Success 200 {object} map[string]string
+	// @Router /health [get]
 	health.GET("", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]string{"status": "OK"})
 	})

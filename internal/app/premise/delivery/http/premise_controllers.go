@@ -20,6 +20,17 @@ func NewHandler(svc services.Service) *Handler {
 	return &Handler{svc: svc}
 }
 
+// CreatePremise creates a new premise
+// @Summary Create a new premise
+// @Description Create a new premise with the provided information
+// @Tags premises
+// @Accept json
+// @Produce json
+// @Param premise body dto.CreatePremiseDto true "Premise creation data"
+// @Success 201 {object} models.Premise
+// @Failure 400 {object} errors.ErrorResponse
+// @Failure 500 {object} errors.ErrorResponse
+// @Router /premises [post]
 func (h *Handler) CreatePremise() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		createPremiseDto := &dto.CreatePremiseDto{}
@@ -40,6 +51,18 @@ func (h *Handler) CreatePremise() echo.HandlerFunc {
 	}
 }
 
+// GetPremises retrieves a paginated list of premises
+// @Summary Get premises with pagination
+// @Description Get a paginated list of all premises
+// @Tags premises
+// @Accept json
+// @Produce json
+// @Param page query int false "Page number" default(1)
+// @Param limit query int false "Number of items per page" default(10)
+// @Success 200 {object} types.PremiseListResponse
+// @Failure 400 {object} errors.ErrorResponse
+// @Failure 500 {object} errors.ErrorResponse
+// @Router /premises [get]
 func (h *Handler) GetPremises() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		page := c.QueryParam("page")
@@ -65,6 +88,19 @@ func (h *Handler) GetPremises() echo.HandlerFunc {
 		return c.JSON(200, premises)
 	}
 }
+
+// GetPremise retrieves a specific premise by ID
+// @Summary Get premise by ID
+// @Description Get a specific premise by its ID
+// @Tags premises
+// @Accept json
+// @Produce json
+// @Param id path string true "Premise ID"
+// @Success 200 {object} models.Premise
+// @Failure 400 {object} errors.ErrorResponse
+// @Failure 404 {object} errors.ErrorResponse
+// @Failure 500 {object} errors.ErrorResponse
+// @Router /premises/{id} [get]
 func (h *Handler) GetPremise() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		premiseID := c.Param("id")
@@ -75,6 +111,19 @@ func (h *Handler) GetPremise() echo.HandlerFunc {
 		return c.JSON(200, premise)
 	}
 }
+
+// GetAvailableUsers retrieves users assigned to a premise
+// @Summary Get users assigned to premise
+// @Description Get all users assigned to a specific premise
+// @Tags premises
+// @Accept json
+// @Produce json
+// @Param id path string true "Premise ID"
+// @Success 200 {object} types.UserListResponse
+// @Failure 400 {object} errors.ErrorResponse
+// @Failure 404 {object} errors.ErrorResponse
+// @Failure 500 {object} errors.ErrorResponse
+// @Router /premises/{id}/users [get]
 func (h *Handler) GetAvailableUsers() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		premiseID := c.Param("id")
@@ -86,6 +135,19 @@ func (h *Handler) GetAvailableUsers() echo.HandlerFunc {
 	}
 }
 
+// UpdatePremise updates an existing premise
+// @Summary Update premise
+// @Description Update an existing premise with new information
+// @Tags premises
+// @Accept json
+// @Produce json
+// @Param id path string true "Premise ID"
+// @Param premise body dto.UpdatePremiseDto true "Premise update data"
+// @Success 200 {object} models.Premise
+// @Failure 400 {object} errors.ErrorResponse
+// @Failure 404 {object} errors.ErrorResponse
+// @Failure 500 {object} errors.ErrorResponse
+// @Router /premises/{id} [patch]
 func (h *Handler) UpdatePremise() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		premiseID := c.Param("id")
@@ -106,6 +168,20 @@ func (h *Handler) UpdatePremise() echo.HandlerFunc {
 
 	}
 }
+
+// AssignUsers assigns or removes users from a premise
+// @Summary Assign users to premise
+// @Description Add or remove users from a premise
+// @Tags premises
+// @Accept json
+// @Produce json
+// @Param id path string true "Premise ID"
+// @Param users body dto.UpdatePremiseUserDto true "User assignment data"
+// @Success 200 {string} string "success"
+// @Failure 400 {object} errors.ErrorResponse
+// @Failure 404 {object} errors.ErrorResponse
+// @Failure 500 {object} errors.ErrorResponse
+// @Router /premises/{id}/assign-users [post]
 func (h *Handler) AssignUsers() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		premiseID := c.Param("id")

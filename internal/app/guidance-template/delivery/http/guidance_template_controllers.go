@@ -19,6 +19,18 @@ func NewHandler(svc services.Service) *Handler {
 	return &Handler{svc: svc}
 }
 
+// CreateGuidanceTemplate creates a new guidance template
+// @Summary Create a new guidance template
+// @Description Create a new guidance template with steps
+// @Tags guidance-templates
+// @Accept json
+// @Produce json
+// @Param template body dto.CreateGuidanceTemplateDto true "Guidance template creation data"
+// @Success 201 {object} models.GuidanceTemplate
+// @Failure 400 {object} errors.ErrorResponse
+// @Failure 500 {object} errors.ErrorResponse
+// @Security BearerAuth
+// @Router /guidance-templates [post]
 func (h *Handler) CreateGuidanceTemplate() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		createGuidanceTemplateDto := &dto.CreateGuidanceTemplateDto{}
@@ -39,6 +51,16 @@ func (h *Handler) CreateGuidanceTemplate() echo.HandlerFunc {
 	}
 }
 
+// GetGuidanceGuidanceTemplates retrieves all guidance templates
+// @Summary Get all guidance templates
+// @Description Get a list of all guidance templates
+// @Tags guidance-templates
+// @Accept json
+// @Produce json
+// @Success 200 {object} types.GuidanceTemplateListResponse
+// @Failure 500 {object} errors.ErrorResponse
+// @Security BearerAuth
+// @Router /guidance-templates [get]
 func (h *Handler) GetGuidanceGuidanceTemplates() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		guidanceTemplates, err := h.svc.GetGuidanceTemplates(c.Request().Context())
@@ -49,6 +71,19 @@ func (h *Handler) GetGuidanceGuidanceTemplates() echo.HandlerFunc {
 	}
 }
 
+// GetGuidanceGuidanceTemplate retrieves a specific guidance template by ID
+// @Summary Get guidance template by ID
+// @Description Get a specific guidance template by its ID
+// @Tags guidance-templates
+// @Accept json
+// @Produce json
+// @Param id path string true "Guidance Template ID"
+// @Success 200 {object} models.GuidanceTemplate
+// @Failure 400 {object} errors.ErrorResponse
+// @Failure 404 {object} errors.ErrorResponse
+// @Failure 500 {object} errors.ErrorResponse
+// @Security BearerAuth
+// @Router /guidance-templates/{id} [get]
 func (h *Handler) GetGuidanceGuidanceTemplate() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		guidanceTemplateID := c.Param("id")
@@ -60,6 +95,20 @@ func (h *Handler) GetGuidanceGuidanceTemplate() echo.HandlerFunc {
 	}
 }
 
+// UpdateGuidanceTemplate updates an existing guidance template
+// @Summary Update guidance template
+// @Description Update an existing guidance template and its steps
+// @Tags guidance-templates
+// @Accept json
+// @Produce json
+// @Param id path string true "Guidance Template ID"
+// @Param template body dto.UpdateGuidanceTemplateDto true "Guidance template update data"
+// @Success 200 {object} models.GuidanceTemplate
+// @Failure 400 {object} errors.ErrorResponse
+// @Failure 404 {object} errors.ErrorResponse
+// @Failure 500 {object} errors.ErrorResponse
+// @Security BearerAuth
+// @Router /guidance-templates/{id} [put]
 func (h *Handler) UpdateGuidanceTemplate() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		guidanceTemplateID := c.Param("id")

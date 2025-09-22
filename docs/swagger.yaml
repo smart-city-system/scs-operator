@@ -1,0 +1,1238 @@
+basePath: /api/v1
+definitions:
+  dto.AssignGuidance:
+    properties:
+      assignee_id:
+        type: string
+      guidance_template_id:
+        type: string
+    required:
+    - assignee_id
+    - guidance_template_id
+    type: object
+  dto.CreateGuardDto:
+    properties:
+      email:
+        maxLength: 255
+        type: string
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      password:
+        maxLength: 100
+        minLength: 6
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  dto.CreateGuidanceStepDto:
+    properties:
+      description:
+        type: string
+      guidance_template_id:
+        type: string
+      step_number:
+        type: integer
+      title:
+        type: string
+    required:
+    - description
+    - guidance_template_id
+    - step_number
+    - title
+    type: object
+  dto.CreateGuidanceTemplateDto:
+    properties:
+      category:
+        type: string
+      description:
+        type: string
+      name:
+        type: string
+      steps:
+        items:
+          $ref: '#/definitions/dto.Step'
+        type: array
+    required:
+    - description
+    - name
+    type: object
+  dto.CreateIncidentDto:
+    properties:
+      alarm_id:
+        type: string
+      assignee_id:
+        type: string
+      description:
+        type: string
+      guidance_template_id:
+        type: string
+      location:
+        type: string
+      name:
+        type: string
+      severity:
+        type: string
+    required:
+    - alarm_id
+    - assignee_id
+    - description
+    - guidance_template_id
+    - location
+    - name
+    - severity
+    type: object
+  dto.CreatePremiseDto:
+    properties:
+      address:
+        maxLength: 255
+        minLength: 2
+        type: string
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      parent_premise_id:
+        type: string
+    required:
+    - address
+    - name
+    type: object
+  dto.Step:
+    properties:
+      description:
+        type: string
+      id:
+        type: string
+      step_number:
+        type: integer
+      title:
+        type: string
+    required:
+    - description
+    - step_number
+    - title
+    type: object
+  dto.UpdateAlarmDto:
+    properties:
+      status:
+        type: string
+    required:
+    - status
+    type: object
+  dto.UpdateGuidanceTemplateDto:
+    properties:
+      add_steps:
+        items:
+          $ref: '#/definitions/dto.Step'
+        type: array
+      category:
+        type: string
+      description:
+        type: string
+      name:
+        type: string
+      remove_steps:
+        items:
+          type: string
+        type: array
+      update_steps:
+        items:
+          $ref: '#/definitions/dto.Step'
+        type: array
+    required:
+    - description
+    - name
+    type: object
+  dto.UpdateIncidentDto:
+    properties:
+      status:
+        type: string
+    required:
+    - status
+    type: object
+  dto.UpdatePremiseDto:
+    properties:
+      address:
+        maxLength: 255
+        minLength: 2
+        type: string
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+    required:
+    - address
+    - name
+    type: object
+  dto.UpdatePremiseUserDto:
+    properties:
+      added_users:
+        items:
+          type: string
+        type: array
+      removed_users:
+        items:
+          type: string
+        type: array
+    type: object
+  errors.ErrorDetail:
+    properties:
+      details: {}
+      message:
+        type: string
+      type:
+        $ref: '#/definitions/errors.ErrorType'
+    type: object
+  errors.ErrorResponse:
+    properties:
+      error:
+        $ref: '#/definitions/errors.ErrorDetail'
+      request_id:
+        type: string
+      status:
+        type: integer
+      timestamp:
+        type: string
+    type: object
+  errors.ErrorType:
+    enum:
+    - VALIDATION_ERROR
+    - NOT_FOUND
+    - UNAUTHORIZED
+    - FORBIDDEN
+    - BAD_REQUEST
+    - CONFLICT
+    - INTERNAL_ERROR
+    - DATABASE_ERROR
+    - EXTERNAL_SERVICE_ERROR
+    - TIMEOUT_ERROR
+    type: string
+    x-enum-varnames:
+    - ErrorTypeValidation
+    - ErrorTypeNotFound
+    - ErrorTypeUnauthorized
+    - ErrorTypeForbidden
+    - ErrorTypeBadRequest
+    - ErrorTypeConflict
+    - ErrorTypeInternal
+    - ErrorTypeDatabase
+    - ErrorTypeExternal
+    - ErrorTypeTimeout
+  models.Alarm:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      device:
+        type: string
+      id:
+        type: string
+      premise:
+        $ref: '#/definitions/models.Premise'
+      premise_id:
+        type: string
+      severity:
+        type: string
+      status:
+        type: string
+      triggered_at:
+        type: string
+      type:
+        type: string
+    type: object
+  models.GuidanceStep:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      guidance_template:
+        $ref: '#/definitions/models.GuidanceTemplate'
+      guidance_template_id:
+        type: string
+      id:
+        type: string
+      step_number:
+        type: integer
+      title:
+        type: string
+    type: object
+  models.GuidanceTemplate:
+    properties:
+      category:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      guidance_steps:
+        items:
+          $ref: '#/definitions/models.GuidanceStep'
+        type: array
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  models.Incident:
+    properties:
+      alarm:
+        $ref: '#/definitions/models.Alarm'
+      alarm_id:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      incident_guidance:
+        $ref: '#/definitions/models.IncidentGuidance'
+      incident_media:
+        items:
+          $ref: '#/definitions/models.IncidentMedia'
+        type: array
+      location:
+        type: string
+      name:
+        type: string
+      severity:
+        type: string
+      status:
+        type: string
+    type: object
+  models.IncidentGuidance:
+    properties:
+      assignee:
+        $ref: '#/definitions/models.User'
+      assignee_id:
+        type: string
+      assigner:
+        $ref: '#/definitions/models.User'
+      assigner_id:
+        type: string
+      created_at:
+        type: string
+      guidance_template:
+        $ref: '#/definitions/models.GuidanceTemplate'
+      guidance_template_id:
+        type: string
+      id:
+        type: string
+      incident:
+        $ref: '#/definitions/models.Incident'
+      incident_guidance_steps:
+        items:
+          $ref: '#/definitions/models.IncidentGuidanceStep'
+        type: array
+      incident_id:
+        type: string
+    type: object
+  models.IncidentGuidanceStep:
+    properties:
+      completed_at:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      incident_guidance:
+        $ref: '#/definitions/models.IncidentGuidance'
+      incident_guidance_id:
+        type: string
+      is_completed:
+        type: boolean
+      step_number:
+        type: integer
+      title:
+        type: string
+    type: object
+  models.IncidentMedia:
+    properties:
+      created_at:
+        type: string
+      file_name:
+        type: string
+      file_size:
+        type: integer
+      file_type:
+        type: string
+      file_url:
+        type: string
+      id:
+        type: string
+      incident:
+        $ref: '#/definitions/models.Incident'
+      incident_id:
+        type: string
+      media_type:
+        type: string
+    type: object
+  models.Premise:
+    properties:
+      address:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      parent_premise:
+        $ref: '#/definitions/models.Premise'
+      parent_premise_id:
+        type: string
+    type: object
+  models.User:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      role:
+        type: string
+    type: object
+  types.IncidentListResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.Incident'
+        type: array
+      pagination:
+        $ref: '#/definitions/types.Pagination'
+    type: object
+  types.Pagination:
+    properties:
+      limit:
+        type: integer
+      page:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  types.PremiseListResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.Premise'
+        type: array
+      pagination:
+        $ref: '#/definitions/types.Pagination'
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: Smart City System (SCS) Operator API for managing premises, alarms,
+    incidents, guidance templates, and guards
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: SCS Operator API
+  version: "1.0"
+paths:
+  /alarms:
+    get:
+      consumes:
+      - application/json
+      description: Get all alarms with optional status filtering
+      parameters:
+      - description: Filter by alarm status (new, ignored, dispatched)
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Alarm'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get alarms
+      tags:
+      - alarms
+  /alarms/{id}:
+    patch:
+      consumes:
+      - application/json
+      description: Update an existing alarm's status or other properties
+      parameters:
+      - description: Alarm ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Alarm update data
+        in: body
+        name: alarm
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateAlarmDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Alarm'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update alarm
+      tags:
+      - alarms
+  /guards:
+    post:
+      consumes:
+      - application/json
+      description: Create a new guard user with the provided information
+      parameters:
+      - description: Guard creation data
+        in: body
+        name: guard
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateGuardDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a new guard
+      tags:
+      - guards
+  /guidance-steps:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of all guidance steps
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.GuidanceStep'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all guidance steps
+      tags:
+      - guidance-steps
+    post:
+      consumes:
+      - application/json
+      description: Create a new guidance step for a guidance template
+      parameters:
+      - description: Guidance step creation data
+        in: body
+        name: step
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateGuidanceStepDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.GuidanceStep'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a new guidance step
+      tags:
+      - guidance-steps
+  /guidance-steps/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a specific guidance step by its ID
+      parameters:
+      - description: Guidance Step ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.GuidanceStep'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get guidance step by ID
+      tags:
+      - guidance-steps
+  /guidance-templates:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of all guidance templates
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.GuidanceTemplate'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all guidance templates
+      tags:
+      - guidance-templates
+    post:
+      consumes:
+      - application/json
+      description: Create a new guidance template with steps
+      parameters:
+      - description: Guidance template creation data
+        in: body
+        name: template
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateGuidanceTemplateDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.GuidanceTemplate'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a new guidance template
+      tags:
+      - guidance-templates
+  /guidance-templates/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a specific guidance template by its ID
+      parameters:
+      - description: Guidance Template ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.GuidanceTemplate'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get guidance template by ID
+      tags:
+      - guidance-templates
+    put:
+      consumes:
+      - application/json
+      description: Update an existing guidance template and its steps
+      parameters:
+      - description: Guidance Template ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Guidance template update data
+        in: body
+        name: template
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateGuidanceTemplateDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.GuidanceTemplate'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update guidance template
+      tags:
+      - guidance-templates
+  /incidents:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of all incidents
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.IncidentListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get incidents with pagination
+      tags:
+      - incidents
+    post:
+      consumes:
+      - application/json
+      description: Create a new incident with the provided information
+      parameters:
+      - description: Incident creation data
+        in: body
+        name: incident
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateIncidentDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Incident'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a new incident
+      tags:
+      - incidents
+  /incidents/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a specific incident by its ID
+      parameters:
+      - description: Incident ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Incident'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get incident by ID
+      tags:
+      - incidents
+    patch:
+      consumes:
+      - application/json
+      description: Update an existing incident's status or other properties
+      parameters:
+      - description: Incident ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Incident update data
+        in: body
+        name: incident
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateIncidentDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Incident'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update incident
+      tags:
+      - incidents
+  /incidents/{id}/assign-guidance:
+    post:
+      consumes:
+      - application/json
+      description: Assign a guidance template to an incident with an assignee
+      parameters:
+      - description: Incident ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Guidance assignment data
+        in: body
+        name: guidance
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AssignGuidance'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.IncidentGuidance'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Assign guidance to incident
+      tags:
+      - incidents
+  /incidents/{id}/complete:
+    patch:
+      consumes:
+      - application/json
+      description: Mark an incident as resolved/completed
+      parameters:
+      - description: Incident ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Complete incident
+      tags:
+      - incidents
+  /incidents/{id}/guidance:
+    get:
+      consumes:
+      - application/json
+      description: Get the guidance assigned to a specific incident
+      parameters:
+      - description: Incident ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.IncidentGuidance'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get incident guidance
+      tags:
+      - incidents
+  /premises:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of all premises
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.PremiseListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      summary: Get premises with pagination
+      tags:
+      - premises
+    post:
+      consumes:
+      - application/json
+      description: Create a new premise with the provided information
+      parameters:
+      - description: Premise creation data
+        in: body
+        name: premise
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreatePremiseDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Premise'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      summary: Create a new premise
+      tags:
+      - premises
+  /premises/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a specific premise by its ID
+      parameters:
+      - description: Premise ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Premise'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      summary: Get premise by ID
+      tags:
+      - premises
+    patch:
+      consumes:
+      - application/json
+      description: Update an existing premise with new information
+      parameters:
+      - description: Premise ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Premise update data
+        in: body
+        name: premise
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatePremiseDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Premise'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      summary: Update premise
+      tags:
+      - premises
+  /premises/{id}/assign-users:
+    post:
+      consumes:
+      - application/json
+      description: Add or remove users from a premise
+      parameters:
+      - description: Premise ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: User assignment data
+        in: body
+        name: users
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatePremiseUserDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      summary: Assign users to premise
+      tags:
+      - premises
+  /premises/{id}/users:
+    get:
+      consumes:
+      - application/json
+      description: Get all users assigned to a specific premise
+      parameters:
+      - description: Premise ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.User'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      summary: Get users assigned to premise
+      tags:
+      - premises
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

@@ -17,6 +17,18 @@ func NewHandler(svc services.Service) *Handler {
 	return &Handler{svc: svc}
 }
 
+// Create creates a new guard
+// @Summary Create a new guard
+// @Description Create a new guard user with the provided information
+// @Tags guards
+// @Accept json
+// @Produce json
+// @Param guard body dto.CreateGuardDto true "Guard creation data"
+// @Success 201 {object} models.User
+// @Failure 400 {object} errors.ErrorResponse
+// @Failure 500 {object} errors.ErrorResponse
+// @Security BearerAuth
+// @Router /guards [post]
 func (h *Handler) Create() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		guard := &dto.CreateGuardDto{}
